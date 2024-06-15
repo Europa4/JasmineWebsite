@@ -7,7 +7,11 @@
         <!-- Favicon -->
         <link rel="icon" href="./Assets/Images/favicon.png" type="image/x-icon">
         <!--Remix icons -->
-        <link href="https://cnd.jsdeliver.net/npm/remixicon@2.4.0/fonts/remixicon.css" rel ="stylesheet">
+        <link href="https://cnd.jsdeliver.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel ="stylesheet">
+        <!-- Swiper.js styles -->
+        <link rel="stylesheet" href="./Assets/css/swiper-bundle.min.css"/>
+        <!-- CSS Styles -->
+        <link rel="stylesheet" href="./Assets/css/main.css"> 
     </head>
     <body>
         <!--header-->
@@ -17,7 +21,7 @@
                     <h2 class="logo">Home</h2>
                 </a>
                 <div class="menu" id ="menu">
-                    <ul class="class">
+                    <ul class="list">
                         <li class="class list-item">
                             <a href="#" class="list-link current">Home</a>
                         </li>
@@ -25,22 +29,32 @@
                             <a href="#" class="list-link">Jasmine's Story</a>
                         </li>
                         <li class="class list-item">
-                            <a href="#" class="list-link current">Contact Us</a>
+                            <a href="#" class="list-link">Contact Us</a>
                         </li>
                     </ul>
                 </div>
 
                 <div class="list list-right">
                     <button class="btn place-items-center" id="theme-toggle-btn">
-                        <i class="ri-sun-line sun-icon">
-
-                        </i>
-                        <i class="ri-moon-line moon-icon">
-                            
-                        </i>
+                        <i class="ri-sun-line sun-icon"></i>
+                        <i class="ri-moon-line moon-icon"></i>
+                    </button>
+    
+                    <button class="btn place-items-center" id="search-icon">
+                        <i class="ri-search-line"></i>
+                    </button>
+    
+                    <button class="btn place-items-center screen-lg-hidden menu-toggle-icon" id="menu-toggle-icon">
+                        <i class="ri-menu-3-line open-menu-icon"></i>
+                        <i class="ri-close-line close-menu-icon"></i>
                     </button>
                 </div>
             </nav>
         </header>
+
+        <!-- Swiper.js -->
+        <script src="./Assets/js/swiper-bundle.min.js"></script>
+        <!-- Custom script -->
+        <script src="./Assets/js/main.js"></script>
     </body>
 </html>
