@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
-        loadExtraHTML();
+        loadStories();
 });
 
-function loadExtraHTML() {
+function loadStories() {
     const storyPointDiv = document.getElementById('story-point-1');
     if(storyPointDiv) {
         storyPointDiv.appendChild(createWishGrantedDiv('Recent Wish Granted',
