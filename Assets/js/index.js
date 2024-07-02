@@ -7,12 +7,17 @@ document.addEventListener("DOMContentLoaded", function() {
 function loadStories() {
     for(let i = 1; i < numberOfFrontPageStories + 1; i++){
         let divId = 'story-point-'.concat(i);
-        const storyPointDiv = document.getElementById(divId);
-        if(storyPointDiv) {
-            storyPointDiv.appendChild(createWishGrantedDiv('Recent Wish Granted',
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus egestas auctor diam, ut ultrices nisi tempor sed. Praesent et quam elit. Etiam vel neque eu magna blandit lacinia. Nulla imperdiet magna non scelerisque interdum. Praesent non diam metus. Cras lorem arcu, venenatis vel commodo et, pretium sit amet dolor. Aliquam ultrices elit at rutrum dictum. Suspendisse vitae posuere orci, quis aliquam mi.',
-                './Assets/Images/placeholder.jpg',
-                'Placeholder image'));
+        const mainArea = document.getElementById('main-area');
+        if(mainArea) {
+            storyPointDiv = document.createElement('div');
+            storyPointDiv.id = divId;
+            mainArea.appendChild(storyPointDiv);
+            if(storyPointDiv) {
+                storyPointDiv.appendChild(createWishGrantedDiv('Recent Wish Granted',
+                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus egestas auctor diam, ut ultrices nisi tempor sed. Praesent et quam elit. Etiam vel neque eu magna blandit lacinia. Nulla imperdiet magna non scelerisque interdum. Praesent non diam metus. Cras lorem arcu, venenatis vel commodo et, pretium sit amet dolor. Aliquam ultrices elit at rutrum dictum. Suspendisse vitae posuere orci, quis aliquam mi.',
+                    './Assets/Images/placeholder.jpg',
+                    'Placeholder image'));
+                }
             }
         }
     }
