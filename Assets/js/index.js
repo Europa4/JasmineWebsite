@@ -5,21 +5,14 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function loadStories() {
-    for(let i = 1; i < numberOfFrontPageStories + 1; i++){
-        let divId = 'story-point-'.concat(i);
-        const mainArea = document.getElementById('main-area');
-        if(mainArea) {
-            storyPointDiv = document.createElement('div');
-            storyPointDiv.id = divId;
-            mainArea.appendChild(storyPointDiv);
-            if(storyPointDiv) {
-                storyPointDiv.appendChild(createWishGrantedDiv('Recent Wish Granted',
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus egestas auctor diam, ut ultrices nisi tempor sed. Praesent et quam elit. Etiam vel neque eu magna blandit lacinia. Nulla imperdiet magna non scelerisque interdum. Praesent non diam metus. Cras lorem arcu, venenatis vel commodo et, pretium sit amet dolor. Aliquam ultrices elit at rutrum dictum. Suspendisse vitae posuere orci, quis aliquam mi.',
-                    './Assets/Images/placeholder.jpg',
-                    'Placeholder image'));
-                }
+    const file = "./Assets/Data/wishes.csv";
+    Papa.parse(file, {
+        download: true,
+        header: true,
+        complete: function(results) {
+            processResults(results)
             }
-        }
+        });
     }
 
 function createWishGrantedDiv(title, description, imgSrc, imgAlt) {
@@ -89,4 +82,25 @@ function createWishGrantedDiv(title, description, imgSrc, imgAlt) {
 
     // Return the constructed HTML element
     return containerDiv;
+}
+
+function processResults(results) {
+    numberOfFrontPageStories = Math.min(results.data.length, numberOfFrontPageStories);
+    for(let i = 0; i < numberOfFrontPageStories; i++){
+        let divId = 'story-point-'.concat(i + 1);
+        let indexNumber = results.data.length - i - 1;
+        const mainArea = document.getElementById('main-area');
+        if(mainArea) {
+            storyPointDiv = document.createElement('div');
+            storyPointDiv.id = divId;
+            mainArea.appendChild(storyPointDiv);
+            if(storyPointDiv) {
+                console.log(results.data[indexNumber])
+                storyPointDiv.appendChild(createWishGrantedDiv(results.data[indexNumber]['Title'],
+                    results.data[indexNumber]['Content'],
+                    results.data[indexNumber]['Image'],
+                    results.data[indexNumber]['Placeholder']));
+                }
+            }
+        }
 }
