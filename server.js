@@ -8,8 +8,13 @@ const port = 5500;
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 
-// Serve static files (like the HTML file)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the current directory
+app.use(express.static(__dirname));
+
+// Define a route to serve the index.html file as a fallback for other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Endpoint to handle form submissions
 app.post('/add-to-csv', (req, res) => {
