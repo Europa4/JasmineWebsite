@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 // Set up Multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './Assets/Images/'); // Save files to 'uploads' directory
+        cb(null, './Assets/Images/'); // Save files to images directory
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname); // Use a unique filename
