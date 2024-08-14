@@ -20,29 +20,40 @@
     <div id="header-placeholder"></div>
     <div class="container mt-5">
         <h1>Create New Wish Story</h1>
-        <form id="csvForm">
+        <form id="csvForm" action="/addNewStory" method="POST">
             <div class="mb-3">
                 <label for="Title" class="form-label">Title</label>
-                <input type="text" class="form-control" id="Title" name="Title" required>
+                <input type="text" class="form-control" id="Title" name="title" required>
             </div>
             <div class="mb-3">
                 <label for="Content" class="form-label">Content</label>
-                <textarea class="form-control" id="Content" name="Content" rows="10" required></textarea>
+                <textarea class="form-control" id="Content" name="content" rows="10" required></textarea>
             </div>
             <div class="mb-3">
-                <label for="Placeholder" class="form-label">Placeholder Text for the Image</label>
-                <input type="text" class="form-control" id="Placeholder" name="Placeholder">
+                <label for="Placeholder" class="form-label">Placeholder Text</label>
+                <input type="text" class="form-control" id="Placeholder" name="placeholderText">
             </div>
             <div class="mb-3">
                 <label for="Date" class="form-label">Date</label>
-                <input type="text" class="form-control" id="Date" name="Date" required>
+                <input type="text" class="form-control" id="Date" name="date" required>
             </div>
             <button type="submit" class="btn btn-primary">Add to Story Storage</button>
         </form>
         <div id="responseMessage" class="mt-3"></div>
     </div>
+    <!-- Toast for Success Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
+            <div class="toast-header">
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Successfully added a new story
+            </div>
+        </div>
+    </div>
     <br>
     <div id="footer-placeholder"></div>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 </body>
 </html>
