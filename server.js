@@ -6,11 +6,8 @@ const path = require('path');
 const app = express();
 const port = 5500;
 
-// Import Popper.js
-import { createPopper } from '@popperjs/core';
-
-// Import Bootstrap JS
-import 'bootstrap';
+const Popper = require('@popperjs/core');
+require('bootstrap');
 
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
