@@ -1,0 +1,44 @@
+[
+    {
+        "name" : "Deborah Moseley",
+        "position" : "Chair",
+        "desription" : "Deborah is the chair of the committee and has been a member of the committee for 5 years. She is a retired teacher and has a passion for the arts.",
+        "image" : ""
+    },
+    {
+        "name" : "Andrew Moseley",
+        "position" : "",
+        "desription" : "Andrew is a member of the committee and has been a member of the committee for 3 years. He is a retired engineer and has a passion for the arts.",
+        "image" : ""
+    },
+    {
+        "name" : "Gail Ann Hill",
+        "position" : "Trustee",
+        "desription" : "Gail is a trustee of the committee and has been a member of the committee for 2 years. She is a retired teacher and has a passion for the arts.",
+        "image" : ""
+    },
+    {
+        "name" : "Francesca Brierley",
+        "position" : "Trustee",
+        "desription" : "Francesca is a trustee of the committee and has been a member of the committee for 1 year. She is a retired teacher and has a passion for the arts.",
+        "image" : ""
+    },
+    {
+        "name" : "Rowann Raynor",
+        "position" : "Trustee",
+        "desription" : "Rowann is a trustee of the committee ",
+        "image" : ""
+    },
+    {
+        "name" : "Garry Picken",
+        "position" : "Trustee",
+        "desription" : "Garry is a trustee of the committee ",
+        "image" : ""
+    },
+    {
+        "name" : "Lisa Purnell",
+        "position" : "Trustee",
+        "desription" : "Lisa is a trustee of the committee ",
+        "image" : ""
+    }
+]
