@@ -6,9 +6,6 @@ const path = require('path');
 const app = express();
 const port = 5500;
 
-const Popper = require('@popperjs/core');
-require('bootstrap');
-
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -26,24 +23,45 @@ const upload = multer({ storage: storage });
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
+app.use(bodyParser.json());
+
 // Endpoint to handle form submissions
-app.post('/addNewStory', (req, res) => {
-    const { title, content, placeholderText, date } = req.body;
-    const newLine = `\n ${title}|\"${content}\"|\"\"|\"${placeholderText}\"|\"${date}\"`;
-    console.log(newLine);
+app.post('/addNewStory', upload.none(), (req, res) => {
+    const Title = req.body.title;
+    const Content = req.body.content;
+    const Placeholder = req.body.placeholder;
+    const Date = req.body.date;
+
+    // Ensure data is correctly received
+    console.log("Received data:", Title, Content, Placeholder, Date);
+    console.log("Received data:", req.body);
+
+    const newLine = `\n ${Title}|\"${Content}\"|\"\"|\"${Placeholder}\"|\"${Date}\"`;
+    
     fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
         if (err) {
             console.error('Error writing to CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
         }
-
-        const successToast = new bootstrap.Toast(document.getElementById('successToast'));
-        successToast.show();
-
-        // Reset form fields to their default states
-        document.getElementById('csvForm').reset();
+        return res.json({ success: true, message: 'Successfully added to CSV' });
     });
 });
+
+// // Endpoint to handle form submissions
+// app.post('/addNewStory', (req, res) => {
+//     const { title, content, placeholderText, date } = req.body;
+//     const newLine = `\n ${title}|\"${content}\"|\"\"|\"${placeholderText}\"|\"${date}\"`;
+    
+//     fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
+//         if (err) {
+//             console.error('Error writing to CSV file', err);
+//             return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
+//         }
+
+//         // Send success response to the client
+//         res.json({ success: true, message: 'Successfully added to CSV' });
+//     });
+// });
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
