@@ -5,13 +5,10 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function loadStories() {
-    const file = "./Assets/Data/wishes.csv";
-    Papa.parse(file, {
-        download: true,
-        header: true,
-        complete: function(results) {
-            processResults(results)
-            }
+    fetch('/api/getStories')
+        .then(response => response.json())
+        .then(data => {
+            processResults(data);
         });
     }
 
@@ -85,8 +82,7 @@ function createWishGrantedDiv(title, description, imgSrc, imgAlt) {
 }
 
 function processResults(results) {
-    numberOfFrontPageStories = Math.min(results.data.length, numberOfFrontPageStories);
-    for(let i = 0; i < numberOfFrontPageStories; i++){
+    for(let i = 0; i < results.data.length; i++){
         let divId = 'story-point-'.concat(i + 1);
         let indexNumber = results.data.length - i - 1;
         const mainArea = document.getElementById('main-area');
@@ -96,10 +92,10 @@ function processResults(results) {
             mainArea.appendChild(storyPointDiv);
             if(storyPointDiv) {
                 console.log(results.data[indexNumber])
-                storyPointDiv.appendChild(createWishGrantedDiv(results.data[indexNumber]['Title'],
-                    results.data[indexNumber]['Content'],
-                    results.data[indexNumber]['Image'],
-                    results.data[indexNumber]['Placeholder']));
+                storyPointDiv.appendChild(createWishGrantedDiv(results.data[indexNumber].title,
+                    results.data[indexNumber].content,
+                    results.data[indexNumber].image,
+                    results.data[indexNumber].placeholder));
                 }
             }
         }

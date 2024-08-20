@@ -36,7 +36,7 @@ app.post('/addNewStory', upload.none(), (req, res) => {
     console.log("Received data:", Title, Content, Placeholder, Date);
     console.log("Received data:", req.body);
 
-    const newLine = `\n ${Title}|\"${Content}\"|\"\"|\"${Placeholder}\"|\"${Date}\"`;
+    const newLine = `\n ${Title}|${Content}||${Placeholder}|${Date}`;
     
     fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
         if (err) {
@@ -44,6 +44,36 @@ app.post('/addNewStory', upload.none(), (req, res) => {
             return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
         }
         return res.json({ success: true, message: 'Successfully added to CSV' });
+    });
+});
+
+// Endpoint to handle requesting stories
+app.get('/api/getStories', (req, res) => {
+    fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+
+        const lines = data.split('\n');
+        const stories = [];
+        let storyMaxNumber = 5; //gives default value of 5
+        fs.readFile('./Assets/preference.txt', 'utf8', (err, pref) => {
+            if(!err)
+                {
+                    storyMaxNumber = pref.numberOfPostsOnMainPage;
+                }
+            else
+                {
+                    console.error('Error reading preference file', err);
+                }
+        });
+        const storyNumber = Math.max(lines.length, storyMaxNumber);
+        for (let i = 1; i < lines.length; i++) {
+            const [title, content, image, placeholder, date] = lines[i].split('|');
+            stories.push({ title, content, image, placeholder, date });
+        }
+        return res.json({ success: true, data: stories });
     });
 });
 
