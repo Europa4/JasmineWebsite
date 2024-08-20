@@ -47,22 +47,6 @@ app.post('/addNewStory', upload.none(), (req, res) => {
     });
 });
 
-// // Endpoint to handle form submissions
-// app.post('/addNewStory', (req, res) => {
-//     const { title, content, placeholderText, date } = req.body;
-//     const newLine = `\n ${title}|\"${content}\"|\"\"|\"${placeholderText}\"|\"${date}\"`;
-    
-//     fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
-//         if (err) {
-//             console.error('Error writing to CSV file', err);
-//             return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
-//         }
-
-//         // Send success response to the client
-//         res.json({ success: true, message: 'Successfully added to CSV' });
-//     });
-// });
-
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
