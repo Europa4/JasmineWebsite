@@ -32,10 +32,6 @@ app.post('/addNewStory', upload.none(), (req, res) => {
     const Placeholder = req.body.placeholder;
     const Date = req.body.date;
 
-    // Ensure data is correctly received
-    console.log("Received data:", Title, Content, Placeholder, Date);
-    console.log("Received data:", req.body);
-
     const newLine = `\n ${Title}|${Content}||${Placeholder}|${Date}`;
     
     fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
