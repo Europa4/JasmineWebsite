@@ -35,15 +35,43 @@ app.post('/addNewStory', upload.none(), (req, res) => {
     // Ensure data is correctly received
     console.log("Received data:", Title, Content, Placeholder, Date);
     console.log("Received data:", req.body);
+    let id = 0;
+    let newLine = '';
 
-    const newLine = `\n ${Title}|${Content}||${Placeholder}|${Date}`;
+    // Read the current JSON file
+    fs.readFile('./Assets/Data/siteData.json', 'utf8', (err, data) => {
+        if (!err) {
+            // Parse the existing JSON data
+            let jsonData = JSON.parse(data);
     
-    fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
-        if (err) {
-            console.error('Error writing to CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
+            // Extract the current storyNumber
+            id = jsonData.StoryNumber;
+    
+            // Create the new line (using the current id)
+            newLine = `\n ${Title}|${Content}||${Placeholder}|${Date}|${id}`;
+    
+            // Increment the id
+            id += 1;
+    
+            // Update the JSON object with the new id
+            jsonData.StoryNumber = id;
+    
+            // Write the updated JSON object back to the file
+            fs.writeFile('./Assets/Data/siteData.json', JSON.stringify(jsonData, null, 4), (err) => {
+                if (err) {
+                    console.error('Error writing updated JSON file', err);
+                }
+            });
+            fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
+                if (err) {
+                    console.error('Error writing to CSV file', err);
+                    return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
+                }
+                return res.json({ success: true, message: 'Successfully added to CSV' });
+            });
+        } else {
+            console.error('Error reading JSON file', err);
         }
-        return res.json({ success: true, message: 'Successfully added to CSV' });
     });
 });
 
