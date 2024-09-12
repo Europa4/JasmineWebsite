@@ -25,6 +25,34 @@ app.use(express.static(__dirname));
 
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/addNewStory', (req, res) => {
+    res.sendFile(path.join(__dirname, 'addNewStory.html'));
+});
+
+app.get('/JasminesStory', (req, res) => {
+    res.sendFile(path.join(__dirname, 'JasminesStory.html'));
+});
+
+app.get('/events', (req, res) => {
+    res.sendFile(path.join(__dirname, 'events.html'));
+});
+
+app.get('/fundraisers', (req, res) => {
+    res.sendFile(path.join(__dirname, 'fundraisers.html'));
+});
+
+app.get('/trustees', (req, res) => {
+    res.sendFile(path.join(__dirname, 'trustees.html'));
+});
+
+app.get('/contactUs', (req, res) => {
+    res.sendFile(path.join(__dirname, 'contactUs.html'));
+});
+
 // Endpoint to handle form submissions
 app.post('/addNewStory', upload.none(), (req, res) => {
     const Title = req.body.title;
