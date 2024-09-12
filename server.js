@@ -31,10 +31,6 @@ app.post('/addNewStory', upload.none(), (req, res) => {
     const Content = req.body.content;
     const Placeholder = req.body.placeholder;
     const Date = req.body.date;
-
-    // Ensure data is correctly received
-    console.log("Received data:", Title, Content, Placeholder, Date);
-    console.log("Received data:", req.body);
     let id = 0;
     let newLine = '';
 
