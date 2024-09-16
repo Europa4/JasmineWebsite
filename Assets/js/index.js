@@ -12,7 +12,7 @@ function loadStories() {
         });
     }
 
-    function createWishGrantedDiv(title, description, imgSrc, imgAlt) {
+    function createWishGrantedDiv(title, description, imgSrc, imgAlt, id) {
         // Create the main container div
         const containerDiv = document.createElement('div');
         containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-dark rounded';
@@ -41,7 +41,7 @@ function loadStories() {
     
         // Create the anchor element
         const anchor = document.createElement('a');
-        anchor.href = '#';
+        anchor.href = '/stories/' + id + '_' + title.replace(/\s+/g, '_');
         anchor.className = 'text-white fw-bold';
         anchor.textContent = 'Continue reading...';
     
@@ -100,7 +100,8 @@ function processResults(results) {
                 storyPointDiv.appendChild(createWishGrantedDiv(results.data[indexNumber].title,
                     results.data[indexNumber].content,
                     results.data[indexNumber].image,
-                    results.data[indexNumber].placeholder));
+                    results.data[indexNumber].placeholder,
+                    results.data[indexNumber].id));
                 }
             }
         }

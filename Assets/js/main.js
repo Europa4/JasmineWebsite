@@ -14,11 +14,11 @@ function loadExtraHTML(file, element) {
 
 document.addEventListener("DOMContentLoaded", function() {
     let files = [{
-        file: 'header.html',
+        file: '/header.html',
         element: 'header-placeholder'
     }, 
     {
-        file: 'footer.html',
+        file: '/footer.html',
         element: 'footer-placeholder'
     }];
     files.forEach(file => {

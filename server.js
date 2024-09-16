@@ -53,6 +53,70 @@ app.get('/contactUs', (req, res) => {
     res.sendFile(path.join(__dirname, 'contactUs.html'));
 });
 
+app.get('/stories/:slug', (req, res) => {
+    const slug = req.params.slug;
+    let firstUnderscore = slug.indexOf('_');
+    let id = slug.substring(0, firstUnderscore);
+    let givenTitle = slug.substring(firstUnderscore + 1);
+    id = parseInt(id);
+    givenTitle = givenTitle.replace(/_/g, ' ');
+    fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+        const lines = data.split('\n');
+        if (id >= lines.length) {
+            console.log("Insufficient entires in CSV file");
+            return res.redirect('/404');
+        }
+        const story = lines[id + 1];
+        const [title, content, image, placeholder, date] = story.split('|');
+        if (givenTitle === title) {
+            const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${title} | ${date}</title>
+                    <!-- Favicon -->
+                    <link rel="icon" href="/Assets/Images/favicon.png" type="image/x-icon">
+                    <!-- Remix icons -->
+                    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+                    <!-- CSS Styles -->
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <link rel="stylesheet" href="/Assets/css/main.css">
+                    <script src="/Assets/js/main.js"></script>
+                </head>
+                <body>
+                    <div id="header-placeholder"></div>
+                    <div class="container">
+                        <div class="element">
+                            <div id="main-content" class="text-center"> <!-- Center text (title and paragraph) -->
+                                <h1>${title} - ${date}</h1>
+                                <div class="d-flex justify-content-center"> <!-- Flexbox to center image -->
+                                    <img src="${image}" alt="${placeholder}" class="img-fluid"> <!-- Bootstrap img-fluid to make the image responsive -->
+                                </div>
+                                <p>${content}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div id="footer-placeholder"></div>
+                </body>
+            </html>
+        `;
+            return res.send(htmlContent);
+        }
+        else
+        {
+            res.redirect('/404');
+        }
+    });
+});
+
 // Endpoint to handle form submissions
 app.post('/addNewStory', upload.none(), (req, res) => {
     const Title = req.body.title;
@@ -122,8 +186,8 @@ app.get('/api/getStories', (req, res) => {
         });
         const storyNumber = Math.max(lines.length, storyMaxNumber);
         for (let i = 1; i < lines.length; i++) {
-            const [title, content, image, placeholder, date] = lines[i].split('|');
-            stories.push({ title, content, image, placeholder, date });
+            const [title, content, image, placeholder, date, id] = lines[i].split('|');
+            stories.push({ title, content, image, placeholder, date, id });
         }
         return res.json({ success: true, data: stories });
     });
