@@ -29,6 +29,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/storyArchive', (req, res) => {
+    res.sendFile(path.join(__dirname, 'storyArchive.html'));
+});
+
 app.get('/addNewStory', (req, res) => {
     res.sendFile(path.join(__dirname, 'addNewStory.html'));
 });
@@ -217,36 +221,36 @@ function buildTreeStructure(data) {
         const [day, month, year] = date.split('-'); // Split DD-MM-YYYY format
 
         // Create the year node if it doesn't exist
-        if (!tree[year]) {
-            tree[year] = {};
+        if (!tree[day]) {
+            tree[day] = {};
         }
 
         // Get the full month name
         const monthName = new Date(`${year}-${month}-01`).toLocaleString('default', { month: 'long' });
 
         // Create the month node if it doesn't exist
-        if (!tree[year][monthName]) {
-            tree[year][monthName] = {};
+        if (!tree[day][monthName]) {
+            tree[day][monthName] = {};
         }
 
         // Create the date node if it doesn't exist
-        if (!tree[year][monthName][day]) {
-            tree[year][monthName][day] = [];
+        if (!tree[day][monthName][year]) {
+            tree[day][monthName][year] = [];
         }
 
         // Add the title and id to the specific date node
-        tree[year][monthName][day].push({ title, id });
+        tree[day][monthName][year].push({ title, id });
     });
 
     // Sort titles alphabetically for each date and return sorted tree
     return sortTree(tree);
+    //return tree;
 }
 
 // Function to sort the tree by year > month > day
 function sortTree(tree) {
     const sortedTree = {};
 
-    // Sort years in descending order (if you want ascending, remove .reverse())
     const sortedYears = Object.keys(tree).sort((a, b) => b - a);
     sortedYears.forEach(year => {
         sortedTree[year] = {};
