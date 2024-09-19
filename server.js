@@ -29,6 +29,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/storyArchive', (req, res) => {
+    res.sendFile(path.join(__dirname, 'storyArchive.html'));
+});
+
 app.get('/addNewStory', (req, res) => {
     res.sendFile(path.join(__dirname, 'addNewStory.html'));
 });
@@ -192,6 +196,84 @@ app.get('/api/getStories', (req, res) => {
         return res.json({ success: true, data: stories });
     });
 });
+
+app.get('/api/getDataForStoryArchiveTree', (req, res) => {
+    let results = [];
+    fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+        let lines = data.split('\n');
+        for (let i = 1; i < lines.length; i++) {
+            results.push(lines[i])
+        }
+        const treeData = buildTreeStructure(results);
+        res.json(treeData);
+    });
+});
+
+function buildTreeStructure(data) {
+    const tree = {};
+
+    data.forEach((row) => {
+        const [title, content, image, placeholder, date, id] = row.split('|');
+        const [day, month, year] = date.split('-'); // Split DD-MM-YYYY format
+
+        // Create the year node if it doesn't exist
+        if (!tree[day]) {
+            tree[day] = {};
+        }
+
+        // Get the full month name
+        const monthName = new Date(`${year}-${month}-01`).toLocaleString('default', { month: 'long' });
+
+        // Create the month node if it doesn't exist
+        if (!tree[day][monthName]) {
+            tree[day][monthName] = {};
+        }
+
+        // Create the date node if it doesn't exist
+        if (!tree[day][monthName][year]) {
+            tree[day][monthName][year] = [];
+        }
+
+        // Add the title and id to the specific date node
+        tree[day][monthName][year].push({ title, id });
+    });
+
+    // Sort titles alphabetically for each date and return sorted tree
+    return sortTree(tree);
+    //return tree;
+}
+
+// Function to sort the tree by year > month > day
+function sortTree(tree) {
+    const sortedTree = {};
+
+    const sortedYears = Object.keys(tree).sort((a, b) => a - b);
+    sortedYears.forEach(year => {
+        sortedTree[year] = {};
+        const sortedMonths = Object.keys(tree[year]).sort((a, b) =>
+            new Date(`${year}-${new Date(`${a} 1`).getMonth() + 1}-01`) -
+            new Date(`${year}-${new Date(`${b} 1`).getMonth() + 1}-01`)
+        );
+        
+        sortedMonths.forEach(month => {
+            sortedTree[year][month] = {};
+
+            // Sort days in ascending order
+            const sortedDays = Object.keys(tree[year][month]).sort((a, b) => a - b);
+
+            sortedDays.forEach(day => {
+                // Alphabetically sort the titles for each day
+                sortedTree[year][month][day] = tree[year][month][day].sort((a, b) => a.title.localeCompare(b.title));
+            });
+        });
+    });
+
+    return sortedTree;
+}
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);

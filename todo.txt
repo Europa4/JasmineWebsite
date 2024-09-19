@@ -1,0 +1,11 @@
+Get archive tree working, and add link to the base of index page
+Replicate story behaviour for Events and Fundraisers
+Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
+------------------------------------------------------------------------------------
+Update story submission form to allow image uploads
+Update story submission form to verify added dates (use date picker?)
+Duplicate story submission forms for Events and Fundraisers
+Provide login mechanism to allow an admin to add stories
+Allow a logged in admin to edit and delete existing stories
+-----------------------------------------------------------------------------------
+Reverse the order of the story/Events/Fundraiser archive trees
