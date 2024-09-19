@@ -33,6 +33,10 @@ app.get('/storyArchive', (req, res) => {
     res.sendFile(path.join(__dirname, 'storyArchive.html'));
 });
 
+app.get('/eventsArchive', (req, res) => {
+    res.sendFile(path.join(__dirname, 'storyArchive.html'));
+});
+
 app.get('/addNewStory', (req, res) => {
     res.sendFile(path.join(__dirname, 'addNewStory.html'));
 });
@@ -59,12 +63,21 @@ app.get('/contactUs', (req, res) => {
 
 app.get('/stories/:slug', (req, res) => {
     const slug = req.params.slug;
+    generatePageHTML('wishes', slug, res);
+});
+
+app.get('/events/:slug', (req, res) => {
+    const slug = req.params.slug;
+    generatePageHTML('events', slug, res);
+});
+
+function generatePageHTML(file, slug, res){
     let firstUnderscore = slug.indexOf('_');
     let id = slug.substring(0, firstUnderscore);
     let givenTitle = slug.substring(firstUnderscore + 1);
     id = parseInt(id);
     givenTitle = givenTitle.replace(/_/g, ' ');
-    fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+    fs.readFile('./Assets/Data/'+ file + '.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -119,7 +132,7 @@ app.get('/stories/:slug', (req, res) => {
             res.redirect('/404');
         }
     });
-});
+}
 
 // Endpoint to handle form submissions
 app.post('/addNewStory', upload.none(), (req, res) => {
@@ -197,6 +210,36 @@ app.get('/api/getStories', (req, res) => {
     });
 });
 
+// Endpoint to handle requesting stories
+app.get('/api/getEvents', (req, res) => {
+    fs.readFile('./Assets/Data/events.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+
+        const lines = data.split('\n');
+        const stories = [];
+        let storyMaxNumber = 5; //gives default value of 5
+        fs.readFile('./Assets/preferences.json', 'utf8', (err, pref) => {
+            if(!err)
+                {
+                    storyMaxNumber = pref.numberOfPostsOnMainPage;
+                }
+            else
+                {
+                    console.error('Error reading preference file', err);
+                }
+        });
+        const storyNumber = Math.max(lines.length, storyMaxNumber);
+        for (let i = 1; i < lines.length; i++) {
+            const [title, content, image, placeholder, date, id] = lines[i].split('|');
+            stories.push({ title, content, image, placeholder, date, id });
+        }
+        return res.json({ success: true, data: stories });
+    });
+});
+
 app.get('/api/getDataForStoryArchiveTree', (req, res) => {
     let results = [];
     fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
@@ -244,7 +287,6 @@ function buildTreeStructure(data) {
 
     // Sort titles alphabetically for each date and return sorted tree
     return sortTree(tree);
-    //return tree;
 }
 
 // Function to sort the tree by year > month > day
