@@ -251,7 +251,7 @@ function buildTreeStructure(data) {
 function sortTree(tree) {
     const sortedTree = {};
 
-    const sortedYears = Object.keys(tree).sort((a, b) => b - a);
+    const sortedYears = Object.keys(tree).sort((a, b) => a - b);
     sortedYears.forEach(year => {
         sortedTree[year] = {};
         const sortedMonths = Object.keys(tree[year]).sort((a, b) =>
