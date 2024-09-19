@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function loadEvents() {
-    fetch('/api/getStories')
+    fetch('/api/getEvents')
         .then(response => response.json())
         .then(data => {
             processResults(data);
@@ -15,7 +15,7 @@ function loadEvents() {
     function createEventDiv(title, description, imgSrc, imgAlt, id) {
         // Create the main container div
         const containerDiv = document.createElement('div');
-        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-dark rounded';
+        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-secondary rounded';
     
         // Create the row div
         const rowDiv = document.createElement('div');
@@ -41,7 +41,7 @@ function loadEvents() {
     
         // Create the anchor element
         const anchor = document.createElement('a');
-        anchor.href = '/stories/' + id + '_' + title.replace(/\s+/g, '_');
+        anchor.href = '/events/' + id + '_' + title.replace(/\s+/g, '_');
         anchor.className = 'text-white fw-bold';
         anchor.textContent = 'Continue reading...';
     
