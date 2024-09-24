@@ -33,6 +33,9 @@ function loadEvents() {
         // Create the first paragraph
         const p1 = document.createElement('p');
         p1.className = 'lead my-3';
+        if (description.length > 503) {
+            description = description.substring(0, 500) + '...';
+        }
         p1.textContent = description;
     
         // Create the second paragraph
