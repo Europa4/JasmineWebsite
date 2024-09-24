@@ -7,4 +7,6 @@ Provide login mechanism to allow an admin to add stories
 Allow a logged in admin to edit and delete existing stories
 -----------------------------------------------------------------------------------
 Reverse the order of the story/Events/Fundraiser archive trees
+Add admin page
 Change servierside fileload to streaming process
+Change the magic number for card char length to a preference that can be set
