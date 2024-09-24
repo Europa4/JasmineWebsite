@@ -34,7 +34,11 @@ app.get('/storyArchive', (req, res) => {
 });
 
 app.get('/eventsArchive', (req, res) => {
-    res.sendFile(path.join(__dirname, 'storyArchive.html'));
+    res.sendFile(path.join(__dirname, 'eventsArchive.html'));
+});
+
+app.get('/fundraiserArchive', (req, res) => {
+    res.sendFile(path.join(__dirname, 'fundraiserArchive.html'));
 });
 
 app.get('/addNewStory', (req, res) => {
@@ -69,6 +73,11 @@ app.get('/stories/:slug', (req, res) => {
 app.get('/events/:slug', (req, res) => {
     const slug = req.params.slug;
     generatePageHTML('events', slug, res);
+});
+
+app.get('/fundraisers/:slug', (req, res) => {
+    const slug = req.params.slug;
+    generatePageHTML('fundraisers', slug, res);
 });
 
 function generatePageHTML(file, slug, res){
@@ -240,9 +249,71 @@ app.get('/api/getEvents', (req, res) => {
     });
 });
 
+// Endpoint to handle requesting stories
+app.get('/api/getFundraisers', (req, res) => {
+    fs.readFile('./Assets/Data/fundraisers.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+
+        const lines = data.split('\n');
+        const stories = [];
+        let storyMaxNumber = 5; //gives default value of 5
+        fs.readFile('./Assets/preferences.json', 'utf8', (err, pref) => {
+            if(!err)
+                {
+                    storyMaxNumber = pref.numberOfPostsOnMainPage;
+                }
+            else
+                {
+                    console.error('Error reading preference file', err);
+                }
+        });
+        const storyNumber = Math.max(lines.length, storyMaxNumber);
+        for (let i = 1; i < lines.length; i++) {
+            const [title, content, image, placeholder, date, id] = lines[i].split('|');
+            stories.push({ title, content, image, placeholder, date, id });
+        }
+        return res.json({ success: true, data: stories });
+    });
+});
+
 app.get('/api/getDataForStoryArchiveTree', (req, res) => {
     let results = [];
     fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+        let lines = data.split('\n');
+        for (let i = 1; i < lines.length; i++) {
+            results.push(lines[i])
+        }
+        const treeData = buildTreeStructure(results);
+        res.json(treeData);
+    });
+});
+
+app.get('/api/getDataForEventsArchiveTree', (req, res) => {
+    let results = [];
+    fs.readFile('./Assets/Data/events.csv', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading CSV file', err);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        }
+        let lines = data.split('\n');
+        for (let i = 1; i < lines.length; i++) {
+            results.push(lines[i])
+        }
+        const treeData = buildTreeStructure(results);
+        res.json(treeData);
+    });
+});
+
+app.get('/api/getDataForFundraiserArchiveTree', (req, res) => {
+    let results = [];
+    fs.readFile('./Assets/Data/fundraisers.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
