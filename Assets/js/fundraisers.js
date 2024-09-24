@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function loadFundraisers() {
-    fetch('/api/getEvents')
+    fetch('/api/getFundraisers')
         .then(response => response.json())
         .then(data => {
             processResults(data);
@@ -15,7 +15,7 @@ function loadFundraisers() {
     function createEventDiv(title, description, imgSrc, imgAlt, id) {
         // Create the main container div
         const containerDiv = document.createElement('div');
-        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-secondary rounded';
+        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-info rounded';
     
         // Create the row div
         const rowDiv = document.createElement('div');
