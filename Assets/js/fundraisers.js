@@ -12,7 +12,7 @@ function loadFundraisers() {
         });
     }
 
-    function createEventDiv(title, description, imgSrc, imgAlt, id) {
+    function createFundraiserDiv(title, description, imgSrc, imgAlt, id) {
         // Create the main container div
         const containerDiv = document.createElement('div');
         containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-info rounded';
@@ -41,7 +41,7 @@ function loadFundraisers() {
     
         // Create the anchor element
         const anchor = document.createElement('a');
-        anchor.href = '/events/' + id + '_' + title.replace(/\s+/g, '_');
+        anchor.href = '/fundraisers/' + id + '_' + title.replace(/\s+/g, '_');
         anchor.className = 'text-white fw-bold';
         anchor.textContent = 'Continue reading...';
     
@@ -97,7 +97,7 @@ function processResults(results) {
             mainArea.appendChild(storyPointDiv);
             if(storyPointDiv) {
                 console.log(results.data[indexNumber])
-                storyPointDiv.appendChild(createEventDiv(results.data[indexNumber].title,
+                storyPointDiv.appendChild(createFundraiserDiv(results.data[indexNumber].title,
                     results.data[indexNumber].content,
                     results.data[indexNumber].image,
                     results.data[indexNumber].placeholder,
