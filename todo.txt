@@ -1,4 +1,5 @@
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
+Change the tree structure data format that's passed by the API (will probably require frontend changes)
 ------------------------------------------------------------------------------------
 Update story submission form to allow image uploads
 Update story submission form to verify added dates (use date picker?)
@@ -6,7 +7,6 @@ Duplicate story submission forms for Events and Fundraisers
 Provide login mechanism to allow an admin to add stories
 Allow a logged in admin to edit and delete existing stories
 -----------------------------------------------------------------------------------
-Reverse the order of the story/Events/Fundraiser archive trees
 Add admin page
 Change servierside fileload to streaming process
 Change the magic number for card char length to a preference that can be set

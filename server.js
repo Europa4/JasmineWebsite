@@ -147,14 +147,17 @@ function generatePageHTML(file, slug, res){
     });
 }
 
-// Endpoint to handle form submissions
-app.post('/addNewStory', upload.none(), (req, res) => {
+// Endpoint to handle form submissions with an image
+app.post('/addNewStory', upload.single('image'), (req, res) => {
     const Title = req.body.title;
     const Content = req.body.content;
     const Placeholder = req.body.placeholder;
     const Date = req.body.date;
     let id = 0;
     let newLine = '';
+    
+    // If a file was uploaded, use its path
+    const imagePath = req.file ? `/Assets/Images/${req.file.filename}` : '';
 
     // Read the current JSON file
     fs.readFile('./Assets/Data/siteData.json', 'utf8', (err, data) => {
@@ -165,8 +168,8 @@ app.post('/addNewStory', upload.none(), (req, res) => {
             // Extract the current storyNumber
             id = jsonData.StoryNumber;
     
-            // Create the new line (using the current id)
-            newLine = `\n ${Title}|${Content}||${Placeholder}|${Date}|${id}`;
+            // Create the new line (using the current id) and include the image path
+            newLine = `\n${Title}|${Content}|${imagePath}|${Placeholder}|${Date}|${id}`;
     
             // Increment the id
             id += 1;
@@ -180,6 +183,8 @@ app.post('/addNewStory', upload.none(), (req, res) => {
                     console.error('Error writing updated JSON file', err);
                 }
             });
+            
+            // Append the new line to the CSV file
             fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
                 if (err) {
                     console.error('Error writing to CSV file', err);
