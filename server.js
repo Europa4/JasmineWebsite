@@ -337,64 +337,76 @@ app.get('/api/getDataForFundraiserArchiveTree', (req, res) => {
 });
 
 function buildTreeStructure(data) {
-    const tree = {};
+    const tree = [];
 
     data.forEach((row) => {
         const [title, content, image, placeholder, date, id] = row.split('|');
-        const [day, month, year] = date.split('-'); // Split DD-MM-YYYY format
+        const [year, month, day] = date.split('-'); // Split YYYY-MM-DD format
+        
+        // Ensure ID values are correctly tracked
+        let yearID = -1, monthID = -1, dayID = -1;
 
-        // Create the year node if it doesn't exist
-        if (!tree[day]) {
-            tree[day] = {};
+        // Check if the year exists
+        let yearNode = tree.find(element => element.year === year);
+        if (!yearNode) {
+            yearNode = { year: year, months: [] };
+            tree.push(yearNode);
         }
+        yearID = tree.indexOf(yearNode);
 
-        // Get the full month name
-        const monthName = new Date(`${year}-${month}-01`).toLocaleString('default', { month: 'long' });
-
-        // Create the month node if it doesn't exist
-        if (!tree[day][monthName]) {
-            tree[day][monthName] = {};
+        // Check if the month exists
+        let monthNode = yearNode.months.find(element => element.month === month);
+        if (!monthNode) {
+            monthNode = { month: month, days: [] };
+            yearNode.months.push(monthNode);
         }
+        monthID = yearNode.months.indexOf(monthNode);
 
-        // Create the date node if it doesn't exist
-        if (!tree[day][monthName][year]) {
-            tree[day][monthName][year] = [];
+        // Check if the day exists
+        let dayNode = monthNode.days.find(element => element.day === day);
+        if (!dayNode) {
+            dayNode = { day: day, events: [] };
+            monthNode.days.push(dayNode);
         }
+        dayID = monthNode.days.indexOf(dayNode);
 
-        // Add the title and id to the specific date node
-        tree[day][monthName][year].push({ title, id });
+        // Push the event into the correct day node
+        dayNode.events.push({ title: title, id: id });
     });
 
-    // Sort titles alphabetically for each date and return sorted tree
-    return sortTree(tree);
-}
+    // After populating the tree, we will sort the data
 
-// Function to sort the tree by year > month > day
-function sortTree(tree) {
-    const sortedTree = {};
-
-    const sortedYears = Object.keys(tree).sort((a, b) => a - b);
-    sortedYears.forEach(year => {
-        sortedTree[year] = {};
-        const sortedMonths = Object.keys(tree[year]).sort((a, b) =>
-            new Date(`${year}-${new Date(`${a} 1`).getMonth() + 1}-01`) -
-            new Date(`${year}-${new Date(`${b} 1`).getMonth() + 1}-01`)
-        );
-        
-        sortedMonths.forEach(month => {
-            sortedTree[year][month] = {};
-
-            // Sort days in ascending order
-            const sortedDays = Object.keys(tree[year][month]).sort((a, b) => a - b);
-
-            sortedDays.forEach(day => {
-                // Alphabetically sort the titles for each day
-                sortedTree[year][month][day] = tree[year][month][day].sort((a, b) => a.title.localeCompare(b.title));
+    // Sort events by title within each day
+    tree.forEach(yearNode => {
+        yearNode.months.forEach(monthNode => {
+            monthNode.days.forEach(dayNode => {
+                dayNode.events.sort((a, b) => a.title.localeCompare(b.title)); // Alphabetical order by title
             });
         });
     });
 
-    return sortedTree;
+    // Sort days in decending numerical order
+    tree.forEach(yearNode => {
+        yearNode.months.forEach(monthNode => {
+            monthNode.days.sort((a, b) => parseInt(b.day) - parseInt(a.day));
+        });
+    });
+
+    // Sort months in decending numerical order
+    tree.forEach(yearNode => {
+        yearNode.months.sort((a, b) => parseInt(b.month) - parseInt(a.month));
+    });
+
+    // Sort years in decending numerical order
+    tree.sort((a, b) => parseInt(b.year) - parseInt(a.year));
+
+    tree.forEach(yearNode => {
+        yearNode.months.forEach(monthNode => {
+            const monthName = new Date(`${yearNode.year}-${monthNode.month}-01`).toLocaleString('default', { month: 'long' });
+            monthNode.month = monthName;
+        })
+    });
+    return tree;
 }
 
 app.listen(port, () => {
