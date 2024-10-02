@@ -47,41 +47,100 @@
 
         // Helper function to create URLs based on id and title
         function createPageLink(id, title) {
-            // Replace spaces with underscores in the title and construct the link
-            const formattedTitle = title.replace(/\s+/g, '_');
+            const formattedTitle = title.replace(/\s+/g, '_');  // Replace spaces with underscores
             return `/stories/${id}_${formattedTitle}`;
         }
 
-        // Recursive function to build the tree HTML with collapsible years and months
-        function buildTreeHTML(data, parentKey = '') {
+        // Function to build the tree structure from year, month, day, and events
+        function buildTreeHTML(treeData) {
             let html = '<ul>';
-            for (const key in data) {
-                if (Array.isArray(data[key])) {
-                    data[key].forEach(item => {
-                        const url = createPageLink(item.id, item.title);
-                        html += `<li><span>${key} - </span><a href="${url}">${item.title}</a></li>`;
-                    });
-                } else if (typeof data[key] === 'object') {
-                    // Use both parent key (year) and current key (month) for unique collapse ID
-                    const collapseId = `${parentKey}_${key.replace(/\s+/g, '_')}`; 
-                    html += `
-                        <li>
-                            <strong>
-                                <a data-bs-toggle="collapse" href="#${collapseId}" role="button" aria-expanded="false" aria-controls="${collapseId}">
-                                    ${key}
-                                </a>
-                            </strong>
-                            <div class="collapse" id="${collapseId}">
-                                ${buildTreeHTML(data[key], collapseId)} <!-- Pass current collapseId as parentKey -->
-                            </div>
-                        </li>`;
-                }
-            }
+            
+            // Iterate through the year nodes
+            treeData.forEach(yearNode => {
+                const year = yearNode.year;
+                const yearCollapseId = `year_${year}`;
+                
+                html += `
+                    <li>
+                        <strong>
+                            <a data-bs-toggle="collapse" href="#${yearCollapseId}" role="button" aria-expanded="false" aria-controls="${yearCollapseId}">
+                                ${year}
+                            </a>
+                        </strong>
+                        <div class="collapse" id="${yearCollapseId}">
+                            ${buildMonthsHTML(yearNode.months, yearCollapseId)}
+                        </div>
+                    </li>`;
+            });
+            
             html += '</ul>';
             return html;
         }
 
+        // Helper function to build HTML for months
+        function buildMonthsHTML(months, parentCollapseId) {
+            let html = '<ul>';
+            
+            months.forEach(monthNode => {
+                const month = monthNode.month;
+                const monthCollapseId = `${parentCollapseId}_month_${month.replace(/\s+/g, '_')}`;
+                
+                html += `
+                    <li>
+                        <strong>
+                            <a data-bs-toggle="collapse" href="#${monthCollapseId}" role="button" aria-expanded="false" aria-controls="${monthCollapseId}">
+                                ${month}
+                            </a>
+                        </strong>
+                        <div class="collapse" id="${monthCollapseId}">
+                            ${buildDaysHTML(monthNode.days, monthCollapseId)}
+                        </div>
+                    </li>`;
+            });
+            
+            html += '</ul>';
+            return html;
+        }
+
+        // Helper function to build HTML for days
+        function buildDaysHTML(days, parentCollapseId) {
+            let html = '<ul>';
+            
+            days.forEach(dayNode => {
+                const day = dayNode.day;
+                const dayCollapseId = `${parentCollapseId}_day_${day}`;
+                
+                html += `
+                    <li>
+                        <strong>
+                            <a data-bs-toggle="collapse" href="#${dayCollapseId}" role="button" aria-expanded="false" aria-controls="${dayCollapseId}">
+                                ${day}
+                            </a>
+                        </strong>
+                        <div class="collapse" id="${dayCollapseId}">
+                            ${buildEventsHTML(dayNode.events)}
+                        </div>
+                    </li>`;
+            });
+            
+            html += '</ul>';
+            return html;
+        }
+
+        // Helper function to build HTML for events (stories)
+        function buildEventsHTML(events) {
+            let html = '<ul>';
+            
+            events.forEach(event => {
+                const url = createPageLink(event.id, event.title);
+                html += `<li><a href="${url}">${event.title}</a></li>`;
+            });
+            
+            html += '</ul>';
+            return html;
+        }
     </script>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
