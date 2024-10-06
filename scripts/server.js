@@ -48,7 +48,7 @@ app.post('/login', (req, res) => {
     
     // Save user session
     req.session.user = user;
-    res.send('Logged in successfully');
+    res.send('Logged in successfully <a href="/addNewStory">add a new story</a> or <a href="/">return to home page</a>');
 });
 
 
