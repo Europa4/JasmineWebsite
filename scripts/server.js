@@ -63,7 +63,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Serve static files from the current directory
+// Serve static files from the above directory
 app.use(express.static(path.join(__dirname, '..')));
 
 app.use(bodyParser.json());
