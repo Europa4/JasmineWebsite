@@ -4,7 +4,6 @@ Migrate all forward facing files to private folders
 ------------------------------------------------------------------------------------
 Update story submission form to verify added dates (use date picker?)
 Duplicate story submission forms for Events and Fundraisers
-Provide login mechanism to allow an admin to add stories
 Allow a logged in admin to edit and delete existing stories
 Change servierside fileload to streaming process
 -----------------------------------------------------------------------------------
