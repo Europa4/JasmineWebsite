@@ -286,7 +286,7 @@ app.get('/api/getEvents', (req, res) => {
         const lines = data.split('\n');
         const stories = [];
         let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Assets/preferences.json', 'utf8', (err, pref) => {
+        fs.readFile('./Assets/Data/preferences.json', 'utf8', (err, pref) => {
             if(!err)
                 {
                     storyMaxNumber = pref.numberOfPostsOnMainPage;
@@ -316,7 +316,7 @@ app.get('/api/getFundraisers', (req, res) => {
         const lines = data.split('\n');
         const stories = [];
         let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Assets/preferences.json', 'utf8', (err, pref) => {
+        fs.readFile('./Assets/Data/preferences.json', 'utf8', (err, pref) => {
             if(!err)
                 {
                     storyMaxNumber = pref.numberOfPostsOnMainPage;
