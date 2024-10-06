@@ -1,6 +1,7 @@
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
 Migrate password out of main server.js
 Migrate all forward facing files to private folders
+generatePageHtml function in server.js assumes linear index, fix by comparing the index field rather than direct access
 ------------------------------------------------------------------------------------
 Update story submission form to verify added dates (use date picker?)
 Duplicate story submission forms for Events and Fundraisers

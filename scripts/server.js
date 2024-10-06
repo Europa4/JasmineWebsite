@@ -143,7 +143,7 @@ function generatePageHTML(file, slug, res){
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
         }
         const lines = data.split('\n');
-        if (id >= lines.length) {
+        if (id >= lines.length - 1) {
             console.log("Insufficient entires in CSV file");
             return res.redirect('/404');
         }
