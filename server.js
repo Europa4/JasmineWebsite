@@ -5,9 +5,52 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const port = 5500;
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configure session middleware
+app.use(session({
+    secret: 'your-secret-key', // Change to a secure secret in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // Set to true when using HTTPS
+}));
+
+function isAuthenticated(req, res, next) {
+    if (req.session.user) {
+        return next();
+    }
+    res.redirect('/login'); // Redirect to login if not authenticated
+}
+
+const loginpassword = "$2a$10$kxrLOPodrCsCqVFZqYdmU.sKmQS1jgNDquADtbwbS7HVT9xr6uFoC";
+const loginname = "admin";
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    // Find the user
+    const user = username === loginname
+    
+    if (!user) {
+        return res.status(400).send('Invalid username or password');
+    }
+    
+    // Compare the hashed password
+    const isMatch = bcrypt.compareSync(password, loginpassword);
+    
+    if (!isMatch) {
+        return res.status(400).send('Invalid username or password');
+    }
+    
+    // Save user session
+    req.session.user = user;
+    res.send('Logged in successfully');
+});
+
 
 // Set up Multer for file uploads
 const storage = multer.diskStorage({
@@ -29,6 +72,10 @@ app.get('/404', (req, res) => {
     res.sendFile(path.join(__dirname, '404.html'));
 });
 
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -45,7 +92,7 @@ app.get('/fundraiserArchive', (req, res) => {
     res.sendFile(path.join(__dirname, 'fundraiserArchive.html'));
 });
 
-app.get('/addNewStory', (req, res) => {
+app.get('/addNewStory', isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'addNewStory.html'));
 });
 
