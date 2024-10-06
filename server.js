@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const port = 5500;
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
 
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -68,6 +70,10 @@ app.use(bodyParser.json());
 
 app.get('/404', (req, res) => {
     res.sendFile(path.join(__dirname, '404.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.get('/', (req, res) => {
