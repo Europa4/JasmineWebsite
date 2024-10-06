@@ -165,7 +165,7 @@ function generatePageHTML(file, slug, res){
                     <!-- CSS Styles -->
                     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
                     <link rel="stylesheet" href="/Assets/css/main.css">
-                    <script src="/Assets/js/main.js"></script>
+                    <script src="/scripts/main.js"></script>
                 </head>
                 <body>
                     <div id="header-placeholder"></div>
