@@ -1,3 +1,4 @@
+Setup cards on trustee page
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
 Migrate password out of main server.js
 Migrate all forward facing files to private folders
