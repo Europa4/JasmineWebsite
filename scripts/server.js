@@ -137,7 +137,7 @@ function generatePageHTML(file, slug, res){
     let givenTitle = slug.substring(firstUnderscore + 1);
     id = parseInt(id);
     givenTitle = givenTitle.replace(/_/g, ' ');
-    fs.readFile('./Assets/Data/'+ file + '.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/'+ file + '.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -159,13 +159,13 @@ function generatePageHTML(file, slug, res){
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>${title} | ${date}</title>
                     <!-- Favicon -->
-                    <link rel="icon" href="./Images/favicon.png" type="image/x-icon">
+                    <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
                     <!-- Remix icons -->
                     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
                     <!-- CSS Styles -->
                     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                    <link rel="stylesheet" href="./css/main.css">
-                    <script src="./JS/main.js"></script>
+                    <link rel="stylesheet" href="/css/main.css">
+                    <script src="/JS/main.js"></script>
                 </head>
                 <body>
                     <div id="header-placeholder"></div>
@@ -204,10 +204,10 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
     let newLine = '';
     
     // If a file was uploaded, use its path
-    const imagePath = req.file ? `./Assets/Images/${req.file.filename}` : '';
+    const imagePath = req.file ? `./Images/${req.file.filename}` : '';
 
     // Read the current JSON file
-    fs.readFile('./Assets/Data/siteData.json', 'utf8', (err, data) => {
+    fs.readFile('../Data/siteData.json', 'utf8', (err, data) => {
         if (!err) {
             // Parse the existing JSON data
             let jsonData = JSON.parse(data);
@@ -225,14 +225,14 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
             jsonData.StoryNumber = id;
     
             // Write the updated JSON object back to the file
-            fs.writeFile('./Assets/Data/siteData.json', JSON.stringify(jsonData, null, 4), (err) => {
+            fs.writeFile('../Data/siteData.json', JSON.stringify(jsonData, null, 4), (err) => {
                 if (err) {
                     console.error('Error writing updated JSON file', err);
                 }
             });
             
             // Append the new line to the CSV file
-            fs.appendFile('./Assets/Data/wishes.csv', newLine, (err) => {
+            fs.appendFile('../Data/wishes.csv', newLine, (err) => {
                 if (err) {
                     console.error('Error writing to CSV file', err);
                     return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
