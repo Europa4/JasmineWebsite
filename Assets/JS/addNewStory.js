@@ -1,8 +1,6 @@
 document.getElementById('csvForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the default form submission behavior
 
-    console.log("Form submitted!");
-
     // Gather form data, including the file
     const formData = new FormData(event.target);
 

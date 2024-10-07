@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Events Archive | Jasmine's Story</title>
+    <title>Fundraiser Archive | Fundraiser Archive</title>
     <!-- Favicon -->
     <link rel="icon" href="./Assets/Images/favicon.png" type="image/x-icon">
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- CSS Styles -->
     <link rel="stylesheet" href="./Assets/css/main.css">
-    <script src="./Assets/js/main.js"></script>
+    <script src="./scripts/main.js"></script>
     <style>
         .tree ul {
             list-style-type: none;
@@ -28,7 +28,7 @@
     <div id="header-placeholder"></div>
     <div class="container d-flex justify-content-center">
         <div>
-            <h1 class="text-center">Events Archive Tree</h1>
+            <h1 class="text-center">Fundraiser Archive Tree</h1>
             <div id="tree" class="tree"></div>
         </div>
     </div>
@@ -37,7 +37,7 @@
 
     <script>
         // Fetch the data from the API
-        fetch('/api/getDataForEventsArchiveTree')
+        fetch('/api/getDataForFundraiserArchiveTree')
             .then(response => response.json())
             .then(data => {
                 const treeContainer = document.getElementById('tree');
@@ -48,7 +48,7 @@
         // Helper function to create URLs based on id and title
         function createPageLink(id, title) {
             const formattedTitle = title.replace(/\s+/g, '_');  // Replace spaces with underscores
-            return `/events/${id}_${formattedTitle}`;
+            return `/fundraisers/${id}_${formattedTitle}`;
         }
 
         // Function to build the tree structure from year, month, day, and events
