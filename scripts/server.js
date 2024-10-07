@@ -64,7 +64,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Serve static files from the above directory
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '..', 'Assets')));
 
 app.use(bodyParser.json());
 
@@ -159,13 +159,13 @@ function generatePageHTML(file, slug, res){
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>${title} | ${date}</title>
                     <!-- Favicon -->
-                    <link rel="icon" href="/Assets/Images/favicon.png" type="image/x-icon">
+                    <link rel="icon" href="./Images/favicon.png" type="image/x-icon">
                     <!-- Remix icons -->
                     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
                     <!-- CSS Styles -->
                     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                    <link rel="stylesheet" href="/Assets/css/main.css">
-                    <script src="/scripts/main.js"></script>
+                    <link rel="stylesheet" href="./css/main.css">
+                    <script src="./JS/main.js"></script>
                 </head>
                 <body>
                     <div id="header-placeholder"></div>
@@ -247,7 +247,7 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
 
 // Endpoint to handle requesting stories
 app.get('/api/getStories', (req, res) => {
-    fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/wishes.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -256,7 +256,7 @@ app.get('/api/getStories', (req, res) => {
         const lines = data.split('\n');
         const stories = [];
         let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Assets/Data/preferences.json', 'utf8', (err, pref) => {
+        fs.readFile('./Data/preferences.json', 'utf8', (err, pref) => {
             if(!err)
                 {
                     storyMaxNumber = pref.numberOfPostsOnMainPage;
@@ -277,7 +277,7 @@ app.get('/api/getStories', (req, res) => {
 
 // Endpoint to handle requesting stories
 app.get('/api/getEvents', (req, res) => {
-    fs.readFile('./Assets/Data/events.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/events.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -286,7 +286,7 @@ app.get('/api/getEvents', (req, res) => {
         const lines = data.split('\n');
         const stories = [];
         let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Assets/Data/preferences.json', 'utf8', (err, pref) => {
+        fs.readFile('./Data/preferences.json', 'utf8', (err, pref) => {
             if(!err)
                 {
                     storyMaxNumber = pref.numberOfPostsOnMainPage;
@@ -307,7 +307,7 @@ app.get('/api/getEvents', (req, res) => {
 
 // Endpoint to handle requesting stories
 app.get('/api/getFundraisers', (req, res) => {
-    fs.readFile('./Assets/Data/fundraisers.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/fundraisers.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -316,7 +316,7 @@ app.get('/api/getFundraisers', (req, res) => {
         const lines = data.split('\n');
         const stories = [];
         let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Assets/Data/preferences.json', 'utf8', (err, pref) => {
+        fs.readFile('./Data/preferences.json', 'utf8', (err, pref) => {
             if(!err)
                 {
                     storyMaxNumber = pref.numberOfPostsOnMainPage;
@@ -337,7 +337,7 @@ app.get('/api/getFundraisers', (req, res) => {
 
 app.get('/api/getDataForStoryArchiveTree', (req, res) => {
     let results = [];
-    fs.readFile('./Assets/Data/wishes.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/wishes.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -353,7 +353,7 @@ app.get('/api/getDataForStoryArchiveTree', (req, res) => {
 
 app.get('/api/getDataForEventsArchiveTree', (req, res) => {
     let results = [];
-    fs.readFile('./Assets/Data/events.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/events.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
@@ -369,7 +369,7 @@ app.get('/api/getDataForEventsArchiveTree', (req, res) => {
 
 app.get('/api/getDataForFundraiserArchiveTree', (req, res) => {
     let results = [];
-    fs.readFile('./Assets/Data/fundraisers.csv', 'utf8', (err, data) => {
+    fs.readFile('./Data/fundraisers.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
