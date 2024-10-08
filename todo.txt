@@ -1,4 +1,3 @@
-Setup cards on trustee page
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
 ------------------------------------------------------------------------------------
 Update story submission form to verify added dates (use date picker?)
