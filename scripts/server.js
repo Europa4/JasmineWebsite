@@ -147,8 +147,21 @@ function generatePageHTML(file, slug, res){
             console.log("Insufficient entires in CSV file");
             return res.redirect('/404');
         }
-        const story = lines[id + 1];
-        const [title, content, image, placeholder, date] = story.split('|');
+        let storyIndex = 0;
+        for (let i = 1; i < lines.length; i++)
+        {
+            const [title, content, image, placeholder, date, storyId] = lines[i].split('|');
+            if (id === parseInt(storyId))
+            {
+                storyIndex = i;
+                break;
+            }
+        }
+        if(storyIndex === 0)
+        {
+            return res.redirect('/404');
+        }
+        const [title, content, image, placeholder, date] = lines[storyIndex].split('|');
         if (givenTitle === title) {
             const htmlContent = `
             <!DOCTYPE html>

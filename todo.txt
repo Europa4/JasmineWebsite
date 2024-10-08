@@ -1,12 +1,12 @@
 Setup cards on trustee page
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
-generatePageHtml function in server.js assumes linear index, fix by comparing the index field rather than direct access
 ------------------------------------------------------------------------------------
 Update story submission form to verify added dates (use date picker?)
 Duplicate story submission forms for Events and Fundraisers
 Allow a logged in admin to edit and delete existing stories
 Change servierside fileload to streaming process
 Migrate password out of main server.js
+Add RTF editor to story submission
 -----------------------------------------------------------------------------------
 Add admin page
 Change the magic number for card char length to a preference that can be set
