@@ -469,6 +469,28 @@ function buildTreeStructure(data) {
     return tree;
 }
 
+    // API to retrieve committee members
+app.get('/api/getComitteMembers', (req, res) => {
+    const filePath = path.join(__dirname, '../Data/committee.json');
+
+    // Read the JSON file
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading committee.json file:', err);
+            return res.status(500).json({ success: false, message: 'Failed to read committee members file' });
+        }
+        
+        // Parse and return the JSON data
+        try {
+            const committeeMembers = JSON.parse(data);
+            res.json(committeeMembers);
+        } catch (parseError) {
+            console.error('Error parsing JSON:', parseError);
+            res.status(500).json({ success: false, message: 'Failed to parse committee members file' });
+        }
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
