@@ -55,7 +55,7 @@ app.post('/login', (req, res) => {
 // Set up Multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './Images/'); // Save files to images directory
+        cb(null, '../Assets/Images/'); // Save files to images directory
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname); // Use a unique filename
@@ -211,16 +211,16 @@ function generatePageHTML(file, slug, res){
 app.post('/addNewStory', upload.single('image'), (req, res) => {
     const Title = req.body.title;
     const Content = req.body.content;
-    const Placeholder = req.body.placeholder;
+    const Placeholder = req.body.placeholder ? req.body.placeholder : '';
     const Date = req.body.date;
     let id = 0;
     let newLine = '';
     
     // If a file was uploaded, use its path
-    const imagePath = req.file ? `./Images/${req.file.filename}` : '';
+    const imagePath = req.file ? `/Images/${req.file.filename}` : '';
 
     // Read the current JSON file
-    fs.readFile('../Data/siteData.json', 'utf8', (err, data) => {
+    fs.readFile('./Data/siteData.json', 'utf8', (err, data) => {
         if (!err) {
             // Parse the existing JSON data
             let jsonData = JSON.parse(data);
@@ -238,14 +238,14 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
             jsonData.StoryNumber = id;
     
             // Write the updated JSON object back to the file
-            fs.writeFile('../Data/siteData.json', JSON.stringify(jsonData, null, 4), (err) => {
+            fs.writeFile('./Data/siteData.json', JSON.stringify(jsonData, null, 4), (err) => {
                 if (err) {
                     console.error('Error writing updated JSON file', err);
                 }
             });
             
             // Append the new line to the CSV file
-            fs.appendFile('../Data/wishes.csv', newLine, (err) => {
+            fs.appendFile('./Data/wishes.csv', newLine, (err) => {
                 if (err) {
                     console.error('Error writing to CSV file', err);
                     return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
