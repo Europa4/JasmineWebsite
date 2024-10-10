@@ -15,11 +15,6 @@ document.addEventListener("DOMContentLoaded", function() {
             // Gather form data, including the file
             const formData = new FormData(event.target);
 
-            // Log form data to verify its contents
-            for (const [key, value] of formData.entries()) {
-                console.log(key, value); // Log each key and value
-            }
-
             // Make the AJAX request using fetch
             fetch('/addNewStory', {
                 method: 'POST',
