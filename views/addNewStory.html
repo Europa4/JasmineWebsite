@@ -28,6 +28,14 @@
         <h1>Create New Wish Story</h1>
         <form id="csvForm" enctype="multipart/form-data" action="/addNewStory" method="POST">
             <div class="mb-3">
+                <label for="Type" class="form-label">Type</label>
+                <select class="form-select" id="Type" name="type" required>
+                    <option value="wishes">Story</option>
+                    <option value="events">Event</option>
+                    <option value="fundraisers">Fundraiser</option>
+                </select>
+            </div>
+            <div class="mb-3">
                 <label for="Title" class="form-label">Title</label>
                 <input type="text" class="form-control" id="Title" name="title" required>
             </div>

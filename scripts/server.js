@@ -205,11 +205,11 @@ function generatePageHTML(file, slug, res){
 
 // Endpoint to handle form submissions with an image
 app.post('/addNewStory', upload.single('image'), (req, res) => {
-    console.log("entered story storage method")
     const Title = req.body.title;
     const Content = req.body.content;
     const Placeholder = req.body.placeholder ? req.body.placeholder : '';
     const Date = req.body.date;
+    const Type = req.body.type;
     let id = 0;
     let newLine = '';
     
@@ -242,7 +242,7 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
             });
             
             // Append the new line to the CSV file
-            fs.appendFile('./Data/wishes.csv', newLine, (err) => {
+            fs.appendFile('./Data/' + Type + '.csv', newLine, (err) => {
                 if (err) {
                     console.error('Error writing to CSV file', err);
                     return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
