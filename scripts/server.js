@@ -55,7 +55,7 @@ app.post('/login', (req, res) => {
 // Set up Multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '../Assets/Images/'); // Save files to images directory
+        cb(null, './Assets/Images/'); // Save files to images directory
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname); // Use a unique filename
@@ -143,10 +143,6 @@ function generatePageHTML(file, slug, res){
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
         }
         const lines = data.split('\n');
-        if (id >= lines.length - 1) {
-            console.log("Insufficient entires in CSV file");
-            return res.redirect('/404');
-        }
         let storyIndex = 0;
         for (let i = 1; i < lines.length; i++)
         {
@@ -209,6 +205,7 @@ function generatePageHTML(file, slug, res){
 
 // Endpoint to handle form submissions with an image
 app.post('/addNewStory', upload.single('image'), (req, res) => {
+    console.log("entered story storage method")
     const Title = req.body.title;
     const Content = req.body.content;
     const Placeholder = req.body.placeholder ? req.body.placeholder : '';
