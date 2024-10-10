@@ -33,10 +33,18 @@ function loadEvents() {
         // Create the first paragraph
         const p1 = document.createElement('p');
         p1.className = 'lead my-3';
-        if (description.length > 503) {
-            description = description.substring(0, 500) + '...';
+
+        // Check and limit the description length (only applies to the plain text, not HTML tags)
+        const tempDiv = document.createElement('div');  // Create a temp div to measure text length
+        tempDiv.innerHTML = description;  // Insert the description HTML into the temp div
+        let plainText = tempDiv.textContent || tempDiv.innerText || '';  // Get the plain text without HTML tags
+        
+        if (plainText.length > 503) {
+            description = plainText.substring(0, 500) + '...';
         }
-        p1.textContent = description;
+
+        // Now use innerHTML to render HTML content properly
+        p1.innerHTML = description;
     
         // Create the second paragraph
         const p2 = document.createElement('p');
