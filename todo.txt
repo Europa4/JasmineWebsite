@@ -4,7 +4,6 @@ Duplicate story submission forms for Events and Fundraisers
 Allow a logged in admin to edit and delete existing stories
 Change servierside fileload to streaming process
 Migrate password out of main server.js
-Add RTF editor to story submission
 -----------------------------------------------------------------------------------
 Add admin page
 Change the magic number for card char length to a preference that can be set
