@@ -51,6 +51,15 @@ app.post('/login', (req, res) => {
     res.send('Logged in successfully. Would you like to <a href="/addNewStory">add a new story</a> or <a href="/">return to home page</a>?');
 });
 
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Failed to log out');
+        }
+        //res.redirect('/login'); // Redirect to login after logout
+    });
+});
+
 
 // Set up Multer for file uploads
 const storage = multer.diskStorage({
@@ -118,17 +127,17 @@ app.get('/contactUs', (req, res) => {
 
 app.get('/stories/:slug', (req, res) => {
     const slug = req.params.slug;
-    generatePageHTML('wishes', slug, res);
+    generatePageHTML('wishes', slug, req, res);
 });
 
 app.get('/events/:slug', (req, res) => {
     const slug = req.params.slug;
-    generatePageHTML('events', slug, res);
+    generatePageHTML('events', slug, req, res);
 });
 
 app.get('/fundraisers/:slug', (req, res) => {
     const slug = req.params.slug;
-    generatePageHTML('fundraisers', slug, res);
+    generatePageHTML('fundraisers', slug, req, res);
 });
 
 function generatePageHTML(file, slug, req, res) {
@@ -160,12 +169,11 @@ function generatePageHTML(file, slug, req, res) {
         }
 
         const [title, content, image, placeholder, date] = lines[storyIndex].split('|');
-        
+        date.split('-').reserse().join('-');
         // Check if the title matches the one in the slug
         if (givenTitle === title) {
-            // Conditionally include the "Delete" button if the user is logged in
-            console.log(req.session);
-            const deleteButton = req.session.user ? `
+            //Conditionally include the "Delete" button if the user is logged in
+            const deleteButton = (req.session && req.session.user) ?  `
                 <button class="btn btn-danger" id="delete-btn" style="position: absolute; top: 10px; right: 10px;">
                     Delete
                 </button>
@@ -173,12 +181,11 @@ function generatePageHTML(file, slug, req, res) {
                     document.getElementById('delete-btn').addEventListener('click', function() {
                         if (confirm('Are you sure you want to delete this story?')) {
                             // Send delete request via AJAX or redirect to the delete endpoint
-                            window.location.href = '/deleteStory/${id}';
+                            window.location.href = '/deleteStory/${file}-${id}';
                         }
                     });
                 </script>
             ` : '';
-
             // Generate the HTML
             const htmlContent = `
                 <!DOCTYPE html>
