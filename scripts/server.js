@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const csv = require('csv-parser');
 const app = express();
 const port = 5500;
 const session = require('express-session');
@@ -16,7 +17,7 @@ app.use(session({
     secret: 'your-secret-key', // Change to a secure secret in production
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Set to true when using HTTPS
+    cookie: { secure: false } 
 }));
 
 function isAuthenticated(req, res, next) {
@@ -168,8 +169,8 @@ function generatePageHTML(file, slug, req, res) {
             return res.redirect('/404');
         }
 
-        const [title, content, image, placeholder, date] = lines[storyIndex].split('|');
-        date.split('-').reserse().join('-');
+        let [title, content, image, placeholder, date] = lines[storyIndex].split('|');
+        date = date.split('-').reverse().join('-');
         // Check if the title matches the one in the slug
         if (givenTitle === title) {
             //Conditionally include the "Delete" button if the user is logged in
@@ -282,6 +283,51 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
         }
     });
 });
+
+app.get('/deleteStory/:id', (req, res) => {
+    if (!req.session.user) {
+        return res.status(403).send('Unauthorized');
+    }
+
+    const passedData = req.params.id;
+    const [file, storyId] = passedData.split('-');
+    const filePath = path.join(__dirname, '..', 'Data', file + '.csv');
+    console.log(filePath);
+    deleteRowById(filePath, storyId);
+
+    res.redirect('/');  // Redirect to homepage or another page after deletion
+});
+
+function deleteRowById(filePath, idToDelete) {
+    const tempFilePath = path.join(__dirname, 'temp.csv');
+    
+    // Create a write stream for the temporary file
+    const writeStream = fs.createWriteStream(tempFilePath);
+    
+    // Read the original CSV file as a stream and process it line by line
+    fs.createReadStream(filePath)
+        .pipe(csv({ separator: '|' }))  // Adjust the separator if needed
+        .on('data', (row) => {
+            const currentID = row.ID; // Assume 'ID' is the header of the ID column
+            if (currentID !== idToDelete.toString()) {
+                // Write the row to the temp file if it doesn't match the idToDelete
+                writeStream.write('\n' + Object.values(row).join('|'));
+            }
+        })
+        .on('end', () => {
+            // When reading is finished, close the write stream
+            writeStream.end();
+            // Replace the original CSV file with the temporary file
+            fs.rename(tempFilePath, filePath, (err) => {
+                if (err) throw err;
+                console.log(`Row with ID ${idToDelete} has been deleted.`);
+            });
+        })
+        .on('error', (err) => {
+            console.error('Error reading or processing CSV file:', err);
+            writeStream.end(); // Ensure the write stream is closed on error
+        });
+}
 
 // Endpoint to handle requesting stories
 app.get('/api/getStories', (req, res) => {
