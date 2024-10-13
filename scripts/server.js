@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const csv = require('csv-parser');
 const app = express();
 const port = 5500;
 const session = require('express-session');
@@ -16,7 +17,7 @@ app.use(session({
     secret: 'your-secret-key', // Change to a secure secret in production
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Set to true when using HTTPS
+    cookie: { secure: false } 
 }));
 
 function isAuthenticated(req, res, next) {
@@ -49,6 +50,15 @@ app.post('/login', (req, res) => {
     // Save user session
     req.session.user = user;
     res.send('Logged in successfully. Would you like to <a href="/addNewStory">add a new story</a> or <a href="/">return to home page</a>?');
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Failed to log out');
+        }
+        //res.redirect('/login'); // Redirect to login after logout
+    });
 });
 
 
@@ -118,86 +128,105 @@ app.get('/contactUs', (req, res) => {
 
 app.get('/stories/:slug', (req, res) => {
     const slug = req.params.slug;
-    generatePageHTML('wishes', slug, res);
+    generatePageHTML('wishes', slug, req, res);
 });
 
 app.get('/events/:slug', (req, res) => {
     const slug = req.params.slug;
-    generatePageHTML('events', slug, res);
+    generatePageHTML('events', slug, req, res);
 });
 
 app.get('/fundraisers/:slug', (req, res) => {
     const slug = req.params.slug;
-    generatePageHTML('fundraisers', slug, res);
+    generatePageHTML('fundraisers', slug, req, res);
 });
 
-function generatePageHTML(file, slug, res){
+function generatePageHTML(file, slug, req, res) {
     let firstUnderscore = slug.indexOf('_');
     let id = slug.substring(0, firstUnderscore);
     let givenTitle = slug.substring(firstUnderscore + 1);
     id = parseInt(id);
     givenTitle = givenTitle.replace(/_/g, ' ');
-    fs.readFile('./Data/'+ file + '.csv', 'utf8', (err, data) => {
+
+    // Read the file
+    fs.readFile('./Data/' + file + '.csv', 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading CSV file', err);
             return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
         }
+
         const lines = data.split('\n');
         let storyIndex = 0;
-        for (let i = 1; i < lines.length; i++)
-        {
+        for (let i = 1; i < lines.length; i++) {
             const [title, content, image, placeholder, date, storyId] = lines[i].split('|');
-            if (id === parseInt(storyId))
-            {
+            if (id === parseInt(storyId)) {
                 storyIndex = i;
                 break;
             }
         }
-        if(storyIndex === 0)
-        {
+
+        if (storyIndex === 0) {
             return res.redirect('/404');
         }
-        const [title, content, image, placeholder, date] = lines[storyIndex].split('|');
+
+        let [title, content, image, placeholder, date] = lines[storyIndex].split('|');
+        date = date.split('-').reverse().join('-');
+        // Check if the title matches the one in the slug
         if (givenTitle === title) {
+            //Conditionally include the "Delete" button if the user is logged in
+            const deleteButton = (req.session && req.session.user) ?  `
+                <button class="btn btn-danger" id="delete-btn" style="position: absolute; top: 10px; right: 10px;">
+                    Delete
+                </button>
+                <script>
+                    document.getElementById('delete-btn').addEventListener('click', function() {
+                        if (confirm('Are you sure you want to delete this story?')) {
+                            // Send delete request via AJAX or redirect to the delete endpoint
+                            window.location.href = '/deleteStory/${file}-${id}';
+                        }
+                    });
+                </script>
+            ` : '';
+            // Generate the HTML
             const htmlContent = `
-            <!DOCTYPE html>
-            <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>${title} | ${date}</title>
-                    <!-- Favicon -->
-                    <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
-                    <!-- Remix icons -->
-                    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-                    <!-- CSS Styles -->
-                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                    <link rel="stylesheet" href="/css/main.css">
-                    <script src="/JS/main.js"></script>
-                </head>
-                <body>
-                    <div id="header-placeholder"></div>
-                    <div class="container">
-                        <div class="element">
-                            <div id="main-content" class="text-center"> <!-- Center text (title and paragraph) -->
-                                <h1>${title} - ${date}</h1>
-                                <div class="d-flex justify-content-center"> <!-- Flexbox to center image -->
-                                    <img src="${image}" alt="${placeholder}" class="img-fluid"> <!-- Bootstrap img-fluid to make the image responsive -->
+                <!DOCTYPE html>
+                <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>${title} | ${date}</title>
+                        <!-- Favicon -->
+                        <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
+                        <!-- Remix icons -->
+                        <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+                        <!-- CSS Styles -->
+                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                        <link rel="stylesheet" href="/css/main.css">
+                        <script src="/JS/main.js"></script>
+                    </head>
+                    <body>
+                        <div id="header-placeholder"></div>
+                        <div class="container">
+                            <div class="element">
+                                <div id="main-content" class="text-center"> <!-- Center text (title and paragraph) -->
+                                    <h1>${title} - ${date}</h1>
+                                    <div class="d-flex justify-content-center"> <!-- Flexbox to center image -->
+                                        <img src="${image}" alt="${placeholder}" class="img-fluid"> <!-- Bootstrap img-fluid to make the image responsive -->
+                                    </div>
+                                    <p>${content}</p>
                                 </div>
-                                <p>${content}</p>
+                                ${deleteButton} <!-- Conditionally render the delete button -->
                             </div>
                         </div>
-                    </div>
-                    <br>
-                    <div id="footer-placeholder"></div>
-                </body>
-            </html>
-        `;
+                        <br>
+                        <div id="footer-placeholder"></div>
+                    </body>
+                </html>
+            `;
+
             return res.send(htmlContent);
-        }
-        else
-        {
+        } else {
             res.redirect('/404');
         }
     });
@@ -254,6 +283,50 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
         }
     });
 });
+
+app.get('/deleteStory/:id', (req, res) => {
+    if (!req.session.user) {
+        return res.status(403).send('Unauthorized');
+    }
+
+    const passedData = req.params.id;
+    const [file, storyId] = passedData.split('-');
+    const filePath = path.join(__dirname, '..', 'Data', file + '.csv');
+    console.log(filePath);
+    deleteRowById(filePath, storyId);
+
+    res.redirect('/');  // Redirect to homepage or another page after deletion
+});
+
+function deleteRowById(filePath, idToDelete) {
+    const tempFilePath = path.join(__dirname, 'temp.csv');
+    
+    // Create a write stream for the temporary file
+    const writeStream = fs.createWriteStream(tempFilePath);
+    writeStream.write('Title|Content|Image|Placeholder|Date|ID'); // Write the header row
+    // Read the original CSV file as a stream and process it line by line
+    fs.createReadStream(filePath)
+        .pipe(csv({ separator: '|' }))  // Adjust the separator if needed
+        .on('data', (row) => {
+            const currentID = row.ID; // Assume 'ID' is the header of the ID column
+            if (currentID !== idToDelete.toString()) {
+                // Write the row to the temp file if it doesn't match the idToDelete
+                writeStream.write('\n' + Object.values(row).join('|'));
+            }
+        })
+        .on('end', () => {
+            // When reading is finished, close the write stream
+            writeStream.end();
+            // Replace the original CSV file with the temporary file
+            fs.rename(tempFilePath, filePath, (err) => {
+                if (err) throw err;
+            });
+        })
+        .on('error', (err) => {
+            console.error('Error reading or processing CSV file:', err);
+            writeStream.end(); // Ensure the write stream is closed on error
+        });
+}
 
 // Endpoint to handle requesting stories
 app.get('/api/getStories', (req, res) => {
