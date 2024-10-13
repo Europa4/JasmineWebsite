@@ -303,7 +303,7 @@ function deleteRowById(filePath, idToDelete) {
     
     // Create a write stream for the temporary file
     const writeStream = fs.createWriteStream(tempFilePath);
-    
+    writeStream.write('Title|Content|Image|Placeholder|Date|ID'); // Write the header row
     // Read the original CSV file as a stream and process it line by line
     fs.createReadStream(filePath)
         .pipe(csv({ separator: '|' }))  // Adjust the separator if needed
@@ -320,7 +320,6 @@ function deleteRowById(filePath, idToDelete) {
             // Replace the original CSV file with the temporary file
             fs.rename(tempFilePath, filePath, (err) => {
                 if (err) throw err;
-                console.log(`Row with ID ${idToDelete} has been deleted.`);
             });
         })
         .on('error', (err) => {
