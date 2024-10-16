@@ -27,29 +27,38 @@ function isAuthenticated(req, res, next) {
     res.redirect('/login'); // Redirect to login if not authenticated
 }
 
-const loginpassword = "$2a$10$kxrLOPodrCsCqVFZqYdmU.sKmQS1jgNDquADtbwbS7HVT9xr6uFoC";
-const loginname = "admin";
-
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    
-    // Find the user
-    const user = username === loginname
-    
-    if (!user) {
-        return res.status(400).send('Invalid username or password');
-    }
-    
-    // Compare the hashed password
-    const isMatch = bcrypt.compareSync(password, loginpassword);
-    
-    if (!isMatch) {
-        return res.status(400).send('Invalid username or password');
-    }
-    
-    // Save user session
-    req.session.user = user;
-    res.send('Logged in successfully. Would you like to <a href="/addNewStory">add a new story</a> or <a href="/">return to home page</a>?');
+    const usersFilePath = './Data/users.json';
+
+    // Read users from the JSON file
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading users file:', err);
+            return res.status(500).send('Server error');
+        }
+
+        // Parse the JSON data
+        const users = JSON.parse(data);
+
+        // Find the user by username
+        const user = users.find(user => user.username === username);
+
+        if (!user) {
+            return res.status(400).send('Invalid username or password');
+        }
+
+        // Compare the hashed password
+        const isMatch = bcrypt.compareSync(password, user.password);
+
+        if (!isMatch) {
+            return res.status(400).send('Invalid username or password');
+        }
+
+        // Save the user session
+        req.session.user = user;
+        res.send('Logged in successfully. Would you like to <a href="/addNewStory">add a new story</a> or <a href="/">return to home page</a>?');
+    });
 });
 
 app.post('/logout', (req, res) => {
@@ -58,6 +67,72 @@ app.post('/logout', (req, res) => {
             return res.status(500).send('Failed to log out');
         }
         //res.redirect('/login'); // Redirect to login after logout
+    });
+});
+
+app.post('/addUser', (req, res) => {
+    const { username, password } = req.body;
+    const usersFilePath = './Data/users.json';
+
+    // Hash the password
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
+    // Read the existing users
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading users file:', err);
+            return res.status(500).send('Server error');
+        }
+
+        // Parse the JSON data
+        const users = JSON.parse(data);
+
+        // Check if the username already exists
+        const userExists = users.some(user => user.username === username);
+
+        if (userExists) {
+            return res.status(400).send('User already exists');
+        }
+
+        // Add the new user
+        users.push({ username, password: hashedPassword });
+
+        // Write the updated users back to the JSON file
+        fs.writeFile(usersFilePath, JSON.stringify(users, null, 4), (err) => {
+            if (err) {
+                console.error('Error writing to users file:', err);
+                return res.status(500).send('Server error');
+            }
+            res.send('User added successfully');
+        });
+    });
+});
+
+app.delete('/deleteUser/:username', (req, res) => {
+    const { username } = req.params;
+    const usersFilePath = './Data/users.json';
+
+    // Read the existing users
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading users file:', err);
+            return res.status(500).send('Server error');
+        }
+
+        // Parse the JSON data
+        let users = JSON.parse(data);
+
+        // Filter out the user to delete
+        users = users.filter(user => user.username !== username);
+
+        // Write the updated users back to the JSON file
+        fs.writeFile(usersFilePath, JSON.stringify(users, null, 4), (err) => {
+            if (err) {
+                console.error('Error writing to users file:', err);
+                return res.status(500).send('Server error');
+            }
+            res.send(`User ${username} deleted successfully`);
+        });
     });
 });
 
