@@ -3,9 +3,9 @@ Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer d
 Allow a logged in admin to edit existing stories
 Change servierside fileload to streaming process
 Migrate password out of main server.js
-Add logout button
 -----------------------------------------------------------------------------------
 Add admin page
+Add logout page to admin page
 Change the magic number for card char length to a preference that can be set
 Allow multiple users
 Add mechanism to add new users
