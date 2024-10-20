@@ -495,52 +495,55 @@ app.get('/api/getFundraisers', (req, res) => {
     readCsvAndSendResponse(csvFilePath, res);
 });
 
+// Utility function to stream CSV, build the tree structure, and send the response
+function streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure) {
+    const results = [];
+
+    // Step 1: Stream the CSV file line by line
+    const csvStream = fs.createReadStream(csvFilePath, { encoding: 'utf8' });
+    const rl = readline.createInterface({
+        input: csvStream,
+        crlfDelay: Infinity, // Handle different line endings
+    });
+
+    let lineNumber = 0;
+
+    rl.on('line', (line) => {
+        lineNumber++;
+        if (lineNumber === 1) return; // Skip the header line
+
+        // Add each line to the results array (without the header)
+        results.push(line);
+    });
+
+    rl.on('close', () => {
+        // Step 2: After reading all the lines, build the tree structure
+        const treeData = buildTreeStructure(results);
+        return res.json(treeData);
+    });
+
+    rl.on('error', (error) => {
+        console.error('Error reading CSV file:', error);
+        return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+    });
+}
+
+// Refactored /api/getDataForStoryArchiveTree endpoint
 app.get('/api/getDataForStoryArchiveTree', (req, res) => {
-    let results = [];
-    fs.readFile('./Data/wishes.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
-        let lines = data.split('\n');
-        for (let i = 1; i < lines.length; i++) {
-            results.push(lines[i])
-        }
-        const treeData = buildTreeStructure(results);
-        res.json(treeData);
-    });
+    const csvFilePath = './Data/wishes.csv'
+    streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure);
 });
 
+// Refactored /api/getDataForEventsArchiveTree endpoint
 app.get('/api/getDataForEventsArchiveTree', (req, res) => {
-    let results = [];
-    fs.readFile('./Data/events.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
-        let lines = data.split('\n');
-        for (let i = 1; i < lines.length; i++) {
-            results.push(lines[i])
-        }
-        const treeData = buildTreeStructure(results);
-        res.json(treeData);
-    });
+    const csvFilePath = './Data/events.csv'
+    streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure);
 });
 
+// Refactored /api/getDataForFundraiserArchiveTree endpoint
 app.get('/api/getDataForFundraiserArchiveTree', (req, res) => {
-    let results = [];
-    fs.readFile('./Data/fundraisers.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
-        let lines = data.split('\n');
-        for (let i = 1; i < lines.length; i++) {
-            results.push(lines[i])
-        }
-        const treeData = buildTreeStructure(results);
-        res.json(treeData);
-    });
+    const csvFilePath = './Data/fundraisers.csv'
+    streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure);
 });
 
 function buildTreeStructure(data) {
