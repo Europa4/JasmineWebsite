@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const fs = require('fs');
+const readline = require('readline');
 const path = require('path');
 const csv = require('csv-parser');
 const app = express();
@@ -223,59 +224,55 @@ function generatePageHTML(file, slug, req, res) {
     id = parseInt(id);
     givenTitle = givenTitle.replace(/_/g, ' ');
 
-    // Read the file
-    fs.readFile('./Data/' + file + '.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
+    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
+    
+    // Create a file stream and use readline to process the file line by line
+    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
 
-        const lines = data.split('\n');
-        let storyIndex = 0;
-        for (let i = 1; i < lines.length; i++) {
-            const [title, content, image, placeholder, date, storyId] = lines[i].split('|');
-            if (id === parseInt(storyId)) {
-                storyIndex = i;
-                break;
-            }
-        }
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity // Recognizes all CR LF (Windows-style) line breaks
+    });
 
-        if (storyIndex === 0) {
-            return res.redirect('/404');
-        }
+    let found = false; // Flag to check if story is found
+    let currentLine = 0; // Line counter
 
-        let [title, content, image, placeholder, date] = lines[storyIndex].split('|');
-        date = date.split('-').reverse().join('-');
-        // Check if the title matches the one in the slug
-        if (givenTitle === title) {
-            //Conditionally include the "Delete" button if the user is logged in
-            const deleteButton = (req.session && req.session.user) ?  `
+    rl.on('line', (line) => {
+        currentLine++;
+        if (currentLine === 1) return; // Skip the header line
+
+        const [title, content, image, placeholder, date, storyId] = line.split('|');
+        if (id === parseInt(storyId)) {
+            found = true;
+            rl.close(); // Close the readline interface since we found the row
+            
+            // Reverse the date from YYYY-MM-DD to DD-MM-YYYY
+            const formattedDate = date.split('-').reverse().join('-');
+
+            // Conditionally include the "Delete" button if the user is logged in
+            const deleteButton = (req.session && req.session.user) ? `
                 <button class="btn btn-danger" id="delete-btn" style="position: absolute; top: 10px; right: 10px;">
                     Delete
                 </button>
                 <script>
                     document.getElementById('delete-btn').addEventListener('click', function() {
                         if (confirm('Are you sure you want to delete this story?')) {
-                            // Send delete request via AJAX or redirect to the delete endpoint
                             window.location.href = '/deleteStory/${file}-${id}';
                         }
                     });
                 </script>
             ` : '';
-            // Generate the HTML
+
+            // Generate the HTML response
             const htmlContent = `
                 <!DOCTYPE html>
                 <html lang="en">
                     <head>
                         <meta charset="UTF-8">
-                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>${title} | ${date}</title>
-                        <!-- Favicon -->
+                        <title>${title} | ${formattedDate}</title>
                         <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
-                        <!-- Remix icons -->
                         <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-                        <!-- CSS Styles -->
                         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
                         <link rel="stylesheet" href="/css/main.css">
                         <script src="/JS/main.js"></script>
@@ -284,14 +281,14 @@ function generatePageHTML(file, slug, req, res) {
                         <div id="header-placeholder"></div>
                         <div class="container">
                             <div class="element">
-                                <div id="main-content" class="text-center"> <!-- Center text (title and paragraph) -->
-                                    <h1>${title} - ${date}</h1>
-                                    <div class="d-flex justify-content-center"> <!-- Flexbox to center image -->
-                                        <img src="${image}" alt="${placeholder}" class="img-fluid"> <!-- Bootstrap img-fluid to make the image responsive -->
+                                <div id="main-content" class="text-center">
+                                    <h1>${title} - ${formattedDate}</h1>
+                                    <div class="d-flex justify-content-center">
+                                        <img src="${image}" alt="${placeholder}" class="img-fluid">
                                     </div>
                                     <p>${content}</p>
                                 </div>
-                                ${deleteButton} <!-- Conditionally render the delete button -->
+                                ${deleteButton}
                             </div>
                         </div>
                         <br>
@@ -300,13 +297,22 @@ function generatePageHTML(file, slug, req, res) {
                 </html>
             `;
 
-            return res.send(htmlContent);
-        } else {
-            res.redirect('/404');
+            // Send the generated HTML to the client
+            res.send(htmlContent);
         }
     });
-}
 
+    rl.on('close', () => {
+        if (!found) {
+            res.redirect('/404'); // Redirect if the story is not found
+        }
+    });
+
+    rl.on('error', (err) => {
+        console.error('Error reading the file:', err);
+        res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+    });
+}
 // Endpoint to handle form submissions with an image
 app.post('/addNewStory', upload.single('image'), (req, res) => {
     const Title = req.body.title;
