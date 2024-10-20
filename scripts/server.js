@@ -67,7 +67,7 @@ app.post('/logout', (req, res) => {
         if (err) {
             return res.status(500).send('Failed to log out');
         }
-        //res.redirect('/login'); // Redirect to login after logout
+        res.redirect('/login'); // Redirect to login after logout
     });
 });
 
@@ -322,46 +322,62 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
     const Type = req.body.type;
     let id = 0;
     let newLine = '';
-    
+
     // If a file was uploaded, use its path
     const imagePath = req.file ? `/Images/${req.file.filename}` : '';
 
-    // Read the current JSON file
-    fs.readFile('./Data/siteData.json', 'utf8', (err, data) => {
-        if (!err) {
-            // Parse the existing JSON data
-            let jsonData = JSON.parse(data);
-    
-            // Extract the current storyNumber
-            id = jsonData.StoryNumber;
-    
-            // Create the new line (using the current id) and include the image path
-            newLine = `\n${Title}|${Content}|${imagePath}|${Placeholder}|${Date}|${id}`;
-    
-            // Increment the id
-            id += 1;
-    
-            // Update the JSON object with the new id
-            jsonData.StoryNumber = id;
-    
-            // Write the updated JSON object back to the file
-            fs.writeFile('./Data/siteData.json', JSON.stringify(jsonData, null, 4), (err) => {
+    // File paths for site data and CSV
+    const siteDataFilePath = path.join(__dirname, '../Data/siteData.json');
+    const csvFilePath = path.join(__dirname, '../Data/', Type + '.csv');
+
+    // Stream-based approach for adding a new story
+
+    // Step 1: Read the siteData.json file to get the story ID
+    fs.readFile(siteDataFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading JSON file:', err);
+            return res.status(500).json({ success: false, message: 'Failed to read siteData.json' });
+        }
+
+        // Parse the JSON data
+        let jsonData;
+        try {
+            jsonData = JSON.parse(data);
+        } catch (parseErr) {
+            console.error('Error parsing JSON file:', parseErr);
+            return res.status(500).json({ success: false, message: 'Failed to parse JSON' });
+        }
+
+        // Extract the current story ID
+        id = jsonData.StoryNumber;
+
+        // Create the new line for the CSV file (including the image path)
+        newLine = `\n${Title}|${Content}|${imagePath}|${Placeholder}|${Date}|${id}`;
+
+        // Increment the story number and update siteData.json
+        id += 1;
+        jsonData.StoryNumber = id;
+
+        // Step 2: Update the siteData.json file with the new story number
+        fs.writeFile(siteDataFilePath, JSON.stringify(jsonData, null, 4), (writeErr) => {
+            if (writeErr) {
+                console.error('Error writing updated JSON file:', writeErr);
+                return res.status(500).json({ success: false, message: 'Failed to update siteData.json' });
+            }
+
+            // Step 3: Append the new story to the appropriate CSV file using streaming
+            const csvStream = fs.createWriteStream(csvFilePath, { flags: 'a' }); // 'a' flag to append data
+            csvStream.write(newLine, (err) => {
                 if (err) {
-                    console.error('Error writing updated JSON file', err);
-                }
-            });
-            
-            // Append the new line to the CSV file
-            fs.appendFile('./Data/' + Type + '.csv', newLine, (err) => {
-                if (err) {
-                    console.error('Error writing to CSV file', err);
+                    console.error('Error writing to CSV file:', err);
                     return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
                 }
-                return res.json({ success: true, message: 'Successfully added to CSV' });
+
+                // Close the stream and respond to the client
+                csvStream.end();
+                res.json({ success: true, message: 'Successfully added to CSV' });
             });
-        } else {
-            console.error('Error reading JSON file', err);
-        }
+        });
     });
 });
 
