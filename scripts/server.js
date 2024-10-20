@@ -425,94 +425,74 @@ function deleteRowById(filePath, idToDelete) {
         });
 }
 
-// Endpoint to handle requesting stories
+
+function readCsvAndSendResponse(csvFilePath, res) {
+    const stories = [];
+    const preferencesPath = './Data/preferences.json'
+    let storyMaxNumber = 5; // Default value
+
+    // Step 1: Read preferences.json to get the max number of stories
+    fs.readFile(preferencesPath, 'utf8', (err, prefData) => {
+        if (!err) {
+            try {
+                const preferences = JSON.parse(prefData);
+                storyMaxNumber = preferences.numberOfPostsOnMainPage || storyMaxNumber;
+            } catch (err) {
+                console.error('Error parsing preferences file:', err);
+            }
+        } else {
+            console.error('Error reading preferences file:', err);
+        }
+
+        // Step 2: Stream the CSV file line by line
+        const csvStream = fs.createReadStream(csvFilePath, { encoding: 'utf8' });
+        const rl = readline.createInterface({
+            input: csvStream,
+            crlfDelay: Infinity, // Handle different line endings
+        });
+
+        let lineNumber = 0;
+
+        rl.on('line', (line) => {
+            lineNumber++;
+            if (lineNumber === 1) return; // Skip the header line
+
+            const [title, content, image, placeholder, date, id] = line.split('|');
+            stories.push({ title, content, image, placeholder, date, id });
+
+            // Stop reading if we hit the max story number
+            if (stories.length >= storyMaxNumber) {
+                rl.close();
+            }
+        });
+
+        rl.on('close', () => {
+            return res.json({ success: true, data: stories });
+        });
+
+        rl.on('error', (error) => {
+            console.error('Error reading CSV file:', error);
+            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
+        });
+    });
+}
+
+// Refactored /api/getStories endpoint
 app.get('/api/getStories', (req, res) => {
-    fs.readFile('./Data/wishes.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
-
-        const lines = data.split('\n');
-        const stories = [];
-        let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Data/preferences.json', 'utf8', (err, pref) => {
-            if(!err)
-                {
-                    storyMaxNumber = pref.numberOfPostsOnMainPage;
-                }
-            else
-                {
-                    console.error('Error reading preference file', err);
-                }
-        });
-        const storyNumber = Math.max(lines.length, storyMaxNumber);
-        for (let i = 1; i < lines.length; i++) {
-            const [title, content, image, placeholder, date, id] = lines[i].split('|');
-            stories.push({ title, content, image, placeholder, date, id });
-        }
-        return res.json({ success: true, data: stories });
-    });
+    const csvFilePath = './Data/wishes.csv'
+    readCsvAndSendResponse(csvFilePath, res);
 });
 
-// Endpoint to handle requesting stories
+// Refactored /api/getEvents endpoint
 app.get('/api/getEvents', (req, res) => {
-    fs.readFile('./Data/events.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
-
-        const lines = data.split('\n');
-        const stories = [];
-        let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Data/preferences.json', 'utf8', (err, pref) => {
-            if(!err)
-                {
-                    storyMaxNumber = pref.numberOfPostsOnMainPage;
-                }
-            else
-                {
-                    console.error('Error reading preference file', err);
-                }
-        });
-        const storyNumber = Math.max(lines.length, storyMaxNumber);
-        for (let i = 1; i < lines.length; i++) {
-            const [title, content, image, placeholder, date, id] = lines[i].split('|');
-            stories.push({ title, content, image, placeholder, date, id });
-        }
-        return res.json({ success: true, data: stories });
-    });
+    const csvFilePath = './Data/events.csv'
+    readCsvAndSendResponse(csvFilePath, res);
 });
 
-// Endpoint to handle requesting stories
+// Refactored /api/getFundraisers endpoint
 app.get('/api/getFundraisers', (req, res) => {
-    fs.readFile('./Data/fundraisers.csv', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading CSV file', err);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        }
-
-        const lines = data.split('\n');
-        const stories = [];
-        let storyMaxNumber = 5; //gives default value of 5
-        fs.readFile('./Data/preferences.json', 'utf8', (err, pref) => {
-            if(!err)
-                {
-                    storyMaxNumber = pref.numberOfPostsOnMainPage;
-                }
-            else
-                {
-                    console.error('Error reading preference file', err);
-                }
-        });
-        const storyNumber = Math.max(lines.length, storyMaxNumber);
-        for (let i = 1; i < lines.length; i++) {
-            const [title, content, image, placeholder, date, id] = lines[i].split('|');
-            stories.push({ title, content, image, placeholder, date, id });
-        }
-        return res.json({ success: true, data: stories });
-    });
+    const csvFilePath = './Data/fundraisers.csv'
+    readCsvAndSendResponse(csvFilePath, res);
 });
 
 app.get('/api/getDataForStoryArchiveTree', (req, res) => {
