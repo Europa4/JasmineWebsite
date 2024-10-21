@@ -389,7 +389,6 @@ app.get('/deleteStory/:id', (req, res) => {
     const passedData = req.params.id;
     const [file, storyId] = passedData.split('-');
     const filePath = path.join(__dirname, '..', 'Data', file + '.csv');
-    console.log(filePath);
     deleteRowById(filePath, storyId);
 
     res.redirect('/');  // Redirect to homepage or another page after deletion
