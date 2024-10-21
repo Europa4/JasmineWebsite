@@ -1,7 +1,6 @@
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
 ------------------------------------------------------------------------------------
 Allow a logged in admin to edit existing stories
-Clear content field on story submission
 -----------------------------------------------------------------------------------
 Add admin page
 Add logout page to admin page
