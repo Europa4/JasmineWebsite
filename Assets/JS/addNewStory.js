@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     const successToast = new bootstrap.Toast(document.getElementById('successToast'));
                     successToast.show();
                     form.reset(); // Reset the form after successful submission
+                    quill.setContents([]);  // This clears the Quill editor
                 } else {
                     console.error('Failed to add to CSV:', data.message);
                 }
