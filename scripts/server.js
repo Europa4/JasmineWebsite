@@ -406,8 +406,6 @@ app.get('/editStory/:slug', isAuthenticated, (req, res) => {
     const slug = req.params.slug;
     let firstDash = slug.indexOf('-');
     let file = slug.substring(0, firstDash);
-    console.log("slug is:", slug);
-    console.log("file is:", file);
     generateEditPage(file, slug, req, res); // Adjust based on file type
 });
 
@@ -433,9 +431,6 @@ function generateEditPage(file, slug, req, res) {
         if (id === parseInt(storyId) && !found) {
             found = true; // Set the flag to true to avoid multiple responses
             rl.close(); // Close the readline interface since we found the row
-
-            console.log("Line found:", line);
-            console.log("Title:", title);
 
             // Render the edit page with pre-filled data
             res.render('editStory', {
