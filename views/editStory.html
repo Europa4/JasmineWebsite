@@ -26,47 +26,83 @@
     <div class="container mt-5">
         <h1>Edit Story</h1>
         <form id="editStoryForm" enctype="multipart/form-data" action="/updateStory" method="POST">
-            <input type="hidden" name="id" value = "<%= id %>">
+            <input type="hidden" name="id" value="<%= id %>">
+            <input type="hidden" id="imageField" name="imageField" value="<%= image %>">
             
             <div class="mb-3">
                 <label for="Title" class="form-label">Title</label>
                 <input type="text" class="form-control" id="Title" name="title" value="<%= title %>" required>
             </div>
-            
+
             <div class="mb-3">
                 <label for="Content" class="form-label">Content</label>
                 <div id="editor" class="form-control" style="height: 300px;"><%= content %></div>
                 <textarea id="Content" name="content" style="display:none;" required></textarea>
             </div>
-            
+
             <div class="mb-3">
                 <label for="Date" class="form-label">Date</label>
                 <input type="date" class="form-control" id="Date" name="date" value="<%= date %>" required>
             </div>
-            
-            <!-- Conditionally display the current image -->
+
+            <!-- Conditionally display the current image with a Remove button -->
             <% if (image && image.trim() !== '') { %>
-            <div class="mb-3">
+            <div id="image-container" class="mb-3">
                 <label for="CurrentImage" class="form-label">Current Image</label>
                 <div>
                     <img src="<%= image %>" alt="<%= placeholder %>" class="img-fluid mb-3" style="max-height: 300px;">
                 </div>
+                <button type="button" class="btn btn-danger" id="remove-image-btn">Remove Image</button>
             </div>
             <% } %>
-            
+
             <div class="mb-3">
                 <label for="Image" class="form-label">Upload New Image (Optional, overrides existing image)</label>
                 <input type="file" class="form-control" id="Image" name="image" accept="image/*">
             </div>
-            
+
             <div class="mb-3">
                 <label for="Placeholder" class="form-label">Placeholder Text</label>
                 <input type="text" class="form-control" id="Placeholder" name="placeholder" value="<%= placeholder %>">
             </div>
-            
+
             <button type="submit" class="btn btn-primary">Update Story</button>
         </form>
     </div>
     <div id="footer-placeholder"></div>
+
+    <!-- JavaScript to handle removing the image -->
+    <script>
+        // Get the elements we need
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const imageField = document.getElementById('imageField');
+        const imageContainer = document.getElementById('image-container');
+        const imageInput = document.getElementById('Image');
+
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', function() {
+                // Hide the image container
+                if (imageContainer) {
+                    imageContainer.style.display = 'none';
+                }
+                
+                // Clear the image path in the hidden input (to indicate removal)
+                imageField.value = '';
+
+                // If the user clicks "Remove Image", clear any selected file in the file input
+                imageInput.value = '';  // Clear the file input field
+            });
+        }
+
+        // On form submission, ensure that the hidden imageField reflects the current state
+        const form = document.getElementById('editStoryForm');
+        form.addEventListener('submit', function(event) {
+            // If no new image is uploaded, the `imageField` will be an empty string if the old image was removed
+            if (imageInput.files.length === 0 && imageField.value === '') {
+                // This means no image is being uploaded, and the old image was removed
+                imageField.value = '';
+            }
+        });
+    </script>
 </body>
 </html>
