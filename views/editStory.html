@@ -36,7 +36,10 @@
 
             <div class="mb-3">
                 <label for="Content" class="form-label">Content</label>
-                <div id="editor" class="form-control" style="height: 300px;"><%= content %></div>
+                <!-- Quill editor container -->
+                <div id="editor" class="form-control" style="height: 300px;"></div>
+                
+                <!-- Hidden input to store the formatted content -->
                 <textarea id="Content" name="content" style="display:none;" required></textarea>
             </div>
 
@@ -70,6 +73,38 @@
         </form>
     </div>
     <div id="footer-placeholder"></div>
+
+    <!-- Quill Editor JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Initialize Quill editor
+        var quill = new Quill('#editor', {
+            theme: 'snow',  // You can choose 'bubble' as an alternative theme
+            placeholder: 'Enter the content...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    ['link', 'blockquote', 'code-block'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['clean']  // Remove formatting button
+                ]
+            }
+        });
+
+        // Populate Quill with the existing content passed from the server
+        quill.root.innerHTML = `<%= content %>`;
+
+        // Handle form submission
+        document.getElementById('editStoryForm').addEventListener('submit', function(event) {
+            // Get the HTML content from the Quill editor
+            var content = quill.root.innerHTML;
+            
+            // Set the hidden textarea with the formatted content
+            document.getElementById('Content').value = content;
+        });
+    </script>
 
     <!-- JavaScript to handle removing the image -->
     <script>
