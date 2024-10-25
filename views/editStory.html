@@ -27,7 +27,8 @@
         <form id="editStoryForm" enctype="multipart/form-data" action="/updateStory" method="POST">
             <input type="hidden" name="id" value="<%= id %>">
             <input type="hidden" id="imageField" name="imageField" value="<%= image %>">
-            
+            <input type="hidden" name="currentUrl" id="currentUrl" value="">
+            <input type="hidden" name="removeImageField" id="removeImageField" value="false">
             <div class="mb-3">
                 <label for="Title" class="form-label">Title</label>
                 <input type="text" class="form-control" id="Title" name="title" value="<%= title %>" required>
@@ -39,7 +40,7 @@
                 <div id="editor" class="form-control" style="height: 300px;"></div>
                 
                 <!-- Hidden input to store the formatted content -->
-                <textarea id="Content" name="content" style="display:none;" required></textarea>
+                <textarea id="Content" name="content" style="display:none;"></textarea> <!-- Remove 'required' attribute here -->
             </div>
 
             <div class="mb-3">
@@ -93,8 +94,9 @@
         });
 
         // Populate Quill with the existing content passed from the server
-        quill.root.innerHTML = `<%= content %>`;
-
+        //quill.root.innerHTML = "<%= content %>";
+        quill.clipboard.dangerouslyPasteHTML(`<%- content %>`);
+        
         // Handle form submission
         document.getElementById('editStoryForm').addEventListener('submit', function(event) {
             // Get the HTML content from the Quill editor
@@ -102,6 +104,9 @@
             
             // Set the hidden textarea with the formatted content
             document.getElementById('Content').value = content;
+            // Set the current URL in the hidden input field
+            document.getElementById('currentUrl').value = window.location.href;
+
         });
     </script>
 
@@ -122,6 +127,8 @@
                 
                 // Clear the image path in the hidden input (to indicate removal)
                 imageField.value = '';
+
+                document.getElementById('removeImageField').value = 'true';
 
                 // If the user clicks "Remove Image", clear any selected file in the file input
                 imageInput.value = '';  // Clear the file input field

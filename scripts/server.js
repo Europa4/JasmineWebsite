@@ -10,6 +10,7 @@ const port = 5500;
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const ejs = require('ejs');
+const html2rtf = require('html2rtf');
 
 app.set('views', path.join(__dirname, '..', 'views')); // Ensure the correct path to the views folder
 app.set('view engine', 'html'); // Use 'html' if you're serving raw HTML files
@@ -431,12 +432,13 @@ function generateEditPage(file, slug, req, res) {
         if (id === parseInt(storyId) && !found) {
             found = true; // Set the flag to true to avoid multiple responses
             rl.close(); // Close the readline interface since we found the row
-
+            const outputContent = sanitizeHtmlForQuill(content);
+            //console.log(RTFcontent)
             // Render the edit page with pre-filled data
             res.render('editStory', {
                 id : id,
                 title : title,
-                content : content,
+                content : outputContent,
                 image : image,
                 placeholder : placeholder,
                 date : date,
@@ -457,11 +459,27 @@ function generateEditPage(file, slug, req, res) {
     });
 }
 
+function sanitizeHtmlForQuill(html) {
+    // Strip tags Quill doesn’t interpret correctly, preserving only formatting tags.
+    // Allowed tags: p, br, strong, em, u, ul, ol, li, blockquote, h1-h6
+    return html
+        .replace(/<(\/?)(div|span|img|table|tr|td|th|html|body|style|script)[^>]*>/gi, '')  // Remove unsupported tags
+        .replace(/<\/?[^>]+(>|$)/g, match => {
+            return /<\/?(p|br|strong|em|u|ul|ol|li|blockquote|h[1-6])\b/.test(match) ? match : '';
+        });
+}
 app.post('/updateStory', upload.single('image'), (req, res) => {
+    //console.log("content", req.body);
     const { id, title, content, placeholder, date } = req.body;
-    const imagePath = req.file ? `/Images/${req.file.filename}` : req.body.existingImage;
+    var imagePath = '';
+    //if(req.removeImageField === 'true')
+    if(true)
+    {
+        imagePath = req.file ? `/Images/${req.file.filename}` : '';
+    }
 
-    const filePath = path.join(__dirname, '../Data/wishes.csv');
+    //console.log("imagePath", imagePath);
+    const filePath = path.join(__dirname, '../Data/' + 'wishes.csv');
     const tempFilePath = path.join(__dirname, '../Data/temp_wishes.csv');
 
     const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
@@ -483,15 +501,32 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
         }
     });
 
-    rl.on('close', () => {
-        tempFileStream.end();
-        fs.rename(tempFilePath, filePath, (err) => {
-            if (err) {
-                console.error('Error renaming file:', err);
-                return res.status(500).json({ success: false, message: 'Failed to update story' });
-            }
-            res.redirect(`/stories/${id}_${title.replace(/\s+/g, '_')}`);
+    tempFileStream.end();
+        tempFileStream.on('finish', () => {
+            console.log('Temp file writing finished. Copying to original file.');
+
+            // Copy temp file to original file path
+            fs.copyFile(tempFilePath, filePath, (copyErr) => {
+                if (copyErr) {
+                    console.error('Error copying file:', copyErr);
+                    return res.status(500).json({ success: false, message: 'Failed to update story' });
+                }
+
+                console.log('File copied successfully. Deleting temp file.');
+                fs.unlink(tempFilePath, (unlinkErr) => {
+                    if (unlinkErr) {
+                        console.error('Error deleting temp file:', unlinkErr);
+                        return res.status(500).json({ success: false, message: 'Failed to clean up temp file' });
+                    }
+                    console.log('Temp file deleted successfully.');
+                    res.redirect(`/stories/${id}_${title.replace(/\s+/g, '_')}`);
+                });
+            });
         });
+
+    tempFileStream.on('error', (err) => {
+        console.error('Error writing to temp file:', err);
+        return res.status(500).json({ success: false, message: 'Failed to write temp file' });
     });
 });
 
