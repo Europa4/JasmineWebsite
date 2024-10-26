@@ -42,6 +42,9 @@ function loadFundraisers() {
         if (plainText.length > 503) {
             description = plainText.substring(0, 500) + '...';
         }
+
+        // Now use innerHTML to render HTML content properly
+        p1.innerHTML = description;
     
         // Create the second paragraph
         const p2 = document.createElement('p');

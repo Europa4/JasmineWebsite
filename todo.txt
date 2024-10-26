@@ -1,5 +1,4 @@
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
-Fix non loading stories in events and fundraisers
 ------------------------------------------------------------------------------------
 Update express session management to deployment ready
 Do a test deployment
