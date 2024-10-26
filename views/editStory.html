@@ -28,7 +28,7 @@
             <input type="hidden" name="id" value="<%= id %>">
             <input type="hidden" id="imageField" name="imageField" value="<%= image %>">
             <input type="hidden" name="currentUrl" id="currentUrl" value="">
-            <input type="hidden" name="removeImageField" id="removeImageField" value="false">
+            <input type="hidden" name="changedImage" id="changedImage" value="false">
             <div class="mb-3">
                 <label for="Title" class="form-label">Title</label>
                 <input type="text" class="form-control" id="Title" name="title" value="<%= title %>" required>
@@ -124,12 +124,13 @@
                 if (imageContainer) {
                     imageContainer.style.display = 'none';
                 }
-                
+                //changedImage = 'true';
                 // Clear the image path in the hidden input (to indicate removal)
                 imageField.value = '';
 
-                document.getElementById('removeImageField').value = 'true';
-
+                //document.getElementById('changedImage').value = 'true';
+                document.getElementById('changedImage').setAttribute('value', 'true');
+                console.log(document.getElementById('changedImage').value);
                 // If the user clicks "Remove Image", clear any selected file in the file input
                 imageInput.value = '';  // Clear the file input field
             });

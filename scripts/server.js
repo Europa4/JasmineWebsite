@@ -470,64 +470,49 @@ function sanitizeHtmlForQuill(html) {
 }
 app.post('/updateStory', upload.single('image'), (req, res) => {
     //console.log("content", req.body);
-    const { id, title, content, placeholder, date } = req.body;
+    var { id, title, content, placeholder, date } = req.body;
     var imagePath = '';
-    //if(req.removeImageField === 'true')
-    if(true)
-    {
-        imagePath = req.file ? `/Images/${req.file.filename}` : '';
-    }
+    //if(req.changedImage === 'true')
+    //imagePath = req.file ? `/Images/${req.file.filename}` : '';
 
     //console.log("imagePath", imagePath);
     const filePath = path.join(__dirname, '../Data/' + 'wishes.csv');
-    const tempFilePath = path.join(__dirname, '../Data/temp_wishes.csv');
 
-    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-    const tempFileStream = fs.createWriteStream(tempFilePath, { encoding: 'utf8' });
-
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
-
-    rl.on('line', (line) => {
-        const [oldTitle, oldContent, oldImage, oldPlaceholder, oldDate, storyId] = line.split('|');
-        if (parseInt(storyId) === parseInt(id)) {
-            // Write the updated line
-            tempFileStream.write(`${title}|${content}|${imagePath}|${placeholder}|${date}|${storyId}\n`);
-        } else {
-            // Write the original line
-            tempFileStream.write(`${line}\n`);
-        }
-    });
-
-    tempFileStream.end();
-        tempFileStream.on('finish', () => {
-            console.log('Temp file writing finished. Copying to original file.');
-
-            // Copy temp file to original file path
-            fs.copyFile(tempFilePath, filePath, (copyErr) => {
-                if (copyErr) {
-                    console.error('Error copying file:', copyErr);
-                    return res.status(500).json({ success: false, message: 'Failed to update story' });
-                }
-
-                console.log('File copied successfully. Deleting temp file.');
-                fs.unlink(tempFilePath, (unlinkErr) => {
-                    if (unlinkErr) {
-                        console.error('Error deleting temp file:', unlinkErr);
-                        return res.status(500).json({ success: false, message: 'Failed to clean up temp file' });
+    try {
+        // Read the original file content
+        const data = fs.readFileSync(filePath, 'utf8');
+        
+        // Split the file into lines and modify the target line
+        const updatedLines = data.split('\n').map(line => {
+            const [oldTitle, oldContent, oldImage, oldPlaceholder, oldDate, storyId] = line.split('|');
+            if (parseInt(storyId) === parseInt(id)) {
+                // Return the updated line if ID matches
+                console.log("changed file", req.body.changedImage);
+                if(!req.file){
+                    if(req.body.changedImage === 'true'){
+                        imagePath = '';
+                        placeholder = '';
+                    } else {
+                        imagePath = oldImage;
                     }
-                    console.log('Temp file deleted successfully.');
-                    res.redirect(`/stories/${id}_${title.replace(/\s+/g, '_')}`);
-                });
-            });
+                } else {
+                    imagePath = req.file ? `/Images/${req.file.filename}` : '';
+                }
+                return `${title}|${content}|${imagePath}|${placeholder}|${date}|${storyId}`;
+            }
+            return line; // Return the original line if no match
         });
 
-    tempFileStream.on('error', (err) => {
-        console.error('Error writing to temp file:', err);
-        return res.status(500).json({ success: false, message: 'Failed to write temp file' });
-    });
+        // Rewrite the entire file with updated lines
+        fs.writeFileSync(filePath, updatedLines.join('\n'), 'utf8');
+        
+        console.log('File successfully updated.');
+        res.redirect(`/stories/${id}_${title.replace(/\s+/g, '_')}`);
+        
+    } catch (err) {
+        console.error('Error processing file:', err);
+        res.status(500).json({ success: false, message: 'Error updating the file' });
+    }
 });
 
 app.get('/deleteStory/:id', (req, res) => {

@@ -2,6 +2,8 @@ Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer d
 Fix non loading stories in events and fundraisers
 ------------------------------------------------------------------------------------
 Allow a logged in admin to edit existing stories
+Update express session management to deployment ready
+Do a test deployment
 Move edit and delete buttons into a div of their own
 -----------------------------------------------------------------------------------
 Add admin page
