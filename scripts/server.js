@@ -472,10 +472,6 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
     //console.log("content", req.body);
     var { id, title, content, placeholder, date } = req.body;
     var imagePath = '';
-    //if(req.changedImage === 'true')
-    //imagePath = req.file ? `/Images/${req.file.filename}` : '';
-
-    //console.log("imagePath", imagePath);
     const filePath = path.join(__dirname, '../Data/' + 'wishes.csv');
 
     try {
@@ -487,7 +483,6 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
             const [oldTitle, oldContent, oldImage, oldPlaceholder, oldDate, storyId] = line.split('|');
             if (parseInt(storyId) === parseInt(id)) {
                 // Return the updated line if ID matches
-                console.log("changed file", req.body.changedImage);
                 if(!req.file){
                     if(req.body.changedImage === 'true'){
                         imagePath = '';
@@ -506,7 +501,6 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
         // Rewrite the entire file with updated lines
         fs.writeFileSync(filePath, updatedLines.join('\n'), 'utf8');
         
-        console.log('File successfully updated.');
         res.redirect(`/stories/${id}_${title.replace(/\s+/g, '_')}`);
         
     } catch (err) {
