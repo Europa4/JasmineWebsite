@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Story | Jasmine's Legacy of Dreams</title>
+    <!-- Favicon -->
+    <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
+    <!-- Remix icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Quill Editor CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- CSS Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
+    <script src="/JS/index.js"></script>
+    <script src="/JS/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <div class="container mt-5">
+        <h1>Edit Story</h1>
+        <form id="editStoryForm" enctype="multipart/form-data" action="/updateStory" method="POST">
+            <input type="hidden" name="id" value="<%= id %>">
+            <input type="hidden" id="imageField" name="imageField" value="<%= image %>">
+            <input type="hidden" name="currentUrl" id="currentUrl" value="">
+            <input type="hidden" name="changedImage" id="changedImage" value="false">
+            <div class="mb-3">
+                <label for="Title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="Title" name="title" value="<%= title %>" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="Content" class="form-label">Content</label>
+                <!-- Quill editor container -->
+                <div id="editor" class="form-control" style="height: 300px;"></div>
+                
+                <!-- Hidden input to store the formatted content -->
+                <textarea id="Content" name="content" style="display:none;"></textarea> <!-- Remove 'required' attribute here -->
+            </div>
+
+            <div class="mb-3">
+                <label for="Date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="Date" name="date" value="<%= date %>" required>
+            </div>
+
+            <!-- Conditionally display the current image with a Remove button -->
+            <% if (image && image.trim() !== '') { %>
+            <div id="image-container" class="mb-3">
+                <label for="CurrentImage" class="form-label">Current Image</label>
+                <div>
+                    <img src="<%= image %>" alt="<%= placeholder %>" class="img-fluid mb-3" style="max-height: 300px;">
+                </div>
+                <button type="button" class="btn btn-danger" id="remove-image-btn">Remove Image</button>
+            </div>
+            <% } %>
+
+            <div class="mb-3">
+                <label for="Image" class="form-label">Upload New Image (Optional, overrides existing image)</label>
+                <input type="file" class="form-control" id="Image" name="image" accept="image/*">
+            </div>
+
+            <div class="mb-3">
+                <label for="Placeholder" class="form-label">Placeholder Text</label>
+                <input type="text" class="form-control" id="Placeholder" name="placeholder" value="<%= placeholder %>">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Story</button>
+        </form>
+    </div>
+    <div id="footer-placeholder"></div>
+
+    <!-- Quill Editor JS -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // Initialize Quill editor
+        var quill = new Quill('#editor', {
+            theme: 'snow',  // You can choose 'bubble' as an alternative theme
+            placeholder: 'Enter the content...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, false] }],
+                    ['bold', 'italic', 'underline'],
+                    ['link', 'blockquote', 'code-block'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['clean']  // Remove formatting button
+                ]
+            }
+        });
+
+        // Populate Quill with the existing content passed from the server
+        //quill.root.innerHTML = "<%= content %>";
+        quill.clipboard.dangerouslyPasteHTML(`<%- content %>`);
+        
+        // Handle form submission
+        document.getElementById('editStoryForm').addEventListener('submit', function(event) {
+            // Get the HTML content from the Quill editor
+            var content = quill.root.innerHTML;
+            
+            // Set the hidden textarea with the formatted content
+            document.getElementById('Content').value = content;
+            // Set the current URL in the hidden input field
+            document.getElementById('currentUrl').value = window.location.href;
+
+        });
+    </script>
+
+    <!-- JavaScript to handle removing the image -->
+    <script>
+        // Get the elements we need
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const imageField = document.getElementById('imageField');
+        const imageContainer = document.getElementById('image-container');
+        const imageInput = document.getElementById('Image');
+
+        if (removeImageBtn) {
+            removeImageBtn.addEventListener('click', function() {
+                // Hide the image container
+                if (imageContainer) {
+                    imageContainer.style.display = 'none';
+                }
+                //changedImage = 'true';
+                // Clear the image path in the hidden input (to indicate removal)
+                imageField.value = '';
+
+                //document.getElementById('changedImage').value = 'true';
+                document.getElementById('changedImage').setAttribute('value', 'true');
+                // If the user clicks "Remove Image", clear any selected file in the file input
+                imageInput.value = '';  // Clear the file input field
+            });
+        }
+
+        // On form submission, ensure that the hidden imageField reflects the current state
+        const form = document.getElementById('editStoryForm');
+        form.addEventListener('submit', function(event) {
+            // If no new image is uploaded, the `imageField` will be an empty string if the old image was removed
+            if (imageInput.files.length === 0 && imageField.value === '') {
+                // This means no image is being uploaded, and the old image was removed
+                imageField.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

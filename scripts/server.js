@@ -9,6 +9,13 @@ const app = express();
 const port = 5500;
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const ejs = require('ejs');
+const html2rtf = require('html2rtf');
+
+app.set('views', path.join(__dirname, '..', 'views')); // Ensure the correct path to the views folder
+app.set('view engine', 'html'); // Use 'html' if you're serving raw HTML files
+
+app.engine('html', ejs.renderFile);  // Use EJS to render HTML files as templates
 
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -182,6 +189,10 @@ app.get('/addNewStory', isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'addNewStory.html'));
 });
 
+app.get('/editStory', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'addNewStory.html'));
+});
+
 app.get('/JasminesStory', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'JasminesStory.html'));
 });
@@ -249,7 +260,18 @@ function generatePageHTML(file, slug, req, res) {
             // Reverse the date from YYYY-MM-DD to DD-MM-YYYY
             const formattedDate = date.split('-').reverse().join('-');
 
-            // Conditionally include the "Delete" button if the user is logged in
+            // Conditionally include the "Delete" and "Edit" buttons if the user is logged in
+            const editButton = (req.session && req.session.user) ? `
+                <button class="btn btn-warning" id="edit-btn" style="position: absolute; top: 10px; right: 100px;">
+                    Edit
+                </button>
+                <script>
+                    document.getElementById('edit-btn').addEventListener('click', function() {
+                        window.location.href = '/editStory/${file}-${id}'; // Redirect to edit page
+                    });
+                </script>
+            ` : '';
+
             const deleteButton = (req.session && req.session.user) ? `
                 <button class="btn btn-danger" id="delete-btn" style="position: absolute; top: 10px; right: 10px;">
                     Delete
@@ -288,7 +310,7 @@ function generatePageHTML(file, slug, req, res) {
                                     </div>
                                     <p>${content}</p>
                                 </div>
-                                ${deleteButton}
+                                ${deleteButton}${editButton}
                             </div>
                         </div>
                         <br>
@@ -379,6 +401,115 @@ app.post('/addNewStory', upload.single('image'), (req, res) => {
             });
         });
     });
+});
+
+app.get('/editStory/:slug', isAuthenticated, (req, res) => {
+    const slug = req.params.slug;
+    let firstDash = slug.indexOf('-');
+    let file = slug.substring(0, firstDash);
+    generateEditPage(file, slug, req, res); // Adjust based on file type
+});
+
+function generateEditPage(file, slug, req, res) {
+    let firstUnderscore = slug.indexOf('-');
+    //let id = slug.substring(0, firstUnderscore);
+    let id = slug.substring(firstUnderscore + 1);
+    id = parseInt(id);
+    //givenTitle = givenTitle.replace(/_/g, ' ');
+
+    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
+
+    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
+
+    let found = false; // Add a flag to prevent multiple responses
+
+    rl.on('line', (line) => {
+        const [title, content, image, placeholder, date, storyId] = line.split('|');
+        if (id === parseInt(storyId) && !found) {
+            found = true; // Set the flag to true to avoid multiple responses
+            rl.close(); // Close the readline interface since we found the row
+            const outputContent = sanitizeHtmlForQuill(content);
+            //console.log(RTFcontent)
+            // Render the edit page with pre-filled data
+            res.render('editStory', {
+                id : id,
+                title : title,
+                content : outputContent,
+                image : image,
+                placeholder : placeholder,
+                date : date,
+            });
+        }
+    });
+
+    rl.on('close', () => {
+        if (!found) {
+            // Send 404 only if the story was not found
+            res.redirect('/404');
+        }
+    });
+
+    rl.on('error', (err) => {
+        console.error('Error reading CSV file:', err);
+        res.status(500).send('Internal Server Error');
+    });
+}
+
+function sanitizeHtmlForQuill(html) {
+    // Strip tags Quill doesn’t interpret correctly, preserving only formatting tags.
+    // Allowed tags: p, br, strong, em, u, ul, ol, li, blockquote, h1-h6
+    return html
+        .replace(/<(\/?)(div|span|img|table|tr|td|th|html|body|style|script)[^>]*>/gi, '')  // Remove unsupported tags
+        .replace(/<\/?[^>]+(>|$)/g, match => {
+            return /<\/?(p|br|strong|em|u|ul|ol|li|blockquote|h[1-6])\b/.test(match) ? match : '';
+        });
+}
+app.post('/updateStory', upload.single('image'), (req, res) => {
+    //console.log("content", req.body);
+    var { id, title, content, placeholder, date } = req.body;
+    var imagePath = '';
+    const url = req.body.currentUrl;
+    var file = url.match(/editStory\/([^ -]+)/);
+    file = file ? file[1] : null;
+    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
+
+    try {
+        // Read the original file content
+        const data = fs.readFileSync(filePath, 'utf8');
+        
+        // Split the file into lines and modify the target line
+        const updatedLines = data.split('\n').map(line => {
+            const [oldTitle, oldContent, oldImage, oldPlaceholder, oldDate, storyId] = line.split('|');
+            if (parseInt(storyId) === parseInt(id)) {
+                // Return the updated line if ID matches
+                if(!req.file){
+                    if(req.body.changedImage === 'true'){
+                        imagePath = '';
+                        placeholder = '';
+                    } else {
+                        imagePath = oldImage;
+                    }
+                } else {
+                    imagePath = req.file ? `/Images/${req.file.filename}` : '';
+                }
+                return `${title}|${content}|${imagePath}|${placeholder}|${date}|${storyId}`;
+            }
+            return line; // Return the original line if no match
+        });
+
+        // Rewrite the entire file with updated lines
+        fs.writeFileSync(filePath, updatedLines.join('\n'), 'utf8');
+        
+        res.redirect('/' + file + `/${id}_${title.replace(/\s+/g, '_')}`);
+        
+    } catch (err) {
+        console.error('Error processing file:', err);
+        res.status(500).json({ success: false, message: 'Error updating the file' });
+    }
 });
 
 app.get('/deleteStory/:id', (req, res) => {
