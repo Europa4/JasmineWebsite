@@ -472,7 +472,10 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
     //console.log("content", req.body);
     var { id, title, content, placeholder, date } = req.body;
     var imagePath = '';
-    const filePath = path.join(__dirname, '../Data/' + 'wishes.csv');
+    const url = req.body.currentUrl;
+    var file = url.match(/editStory\/([^ -]+)/);
+    file = file ? file[1] : null;
+    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
 
     try {
         // Read the original file content
@@ -501,7 +504,7 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
         // Rewrite the entire file with updated lines
         fs.writeFileSync(filePath, updatedLines.join('\n'), 'utf8');
         
-        res.redirect(`/stories/${id}_${title.replace(/\s+/g, '_')}`);
+        res.redirect('/' + file + `/${id}_${title.replace(/\s+/g, '_')}`);
         
     } catch (err) {
         console.error('Error processing file:', err);
