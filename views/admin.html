@@ -20,6 +20,7 @@
                 <div id="main-content">
                     <h1>Admin</h1>
                     <p>Welcome to the admin page. Here you can manage the website's content.</p>
+                    <button class="btn btn-warning" id="AddNewStory">Add New Story</button>
                     <button class="btn btn-warning" id="logout">Logout</button>
                 </div>
             </div>
@@ -43,6 +44,9 @@
                 }
             })
             .catch(error => console.error('Logout error:', error));
+        });
+        document.getElementById('AddNewStory').addEventListener('click', function() {
+            window.location.href = '/addNewStory'; // Redirect to login page if logout is successful
         });
     </script>
 </html>
