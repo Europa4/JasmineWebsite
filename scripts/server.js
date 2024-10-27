@@ -74,12 +74,11 @@ app.post('/login', (req, res) => {
 
         // Save the user session
         req.session.user = user;
-        res.send('Logged in successfully. Would you like to <a href="/addNewStory">add a new story</a> or <a href="/">return to home page</a>?');
+        res.redirect('/admin'); // Redirect to admin after login
     });
 });
 
 app.post('/logout', (req, res) => {
-    console.log("logging out")
     req.session.destroy(err => {
         if (err) {
             return res.status(500).send('Failed to log out');
