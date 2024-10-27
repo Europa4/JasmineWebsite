@@ -17,15 +17,24 @@ app.set('view engine', 'html'); // Use 'html' if you're serving raw HTML files
 
 app.engine('html', ejs.renderFile);  // Use EJS to render HTML files as templates
 
+const SqliteStore = require("better-sqlite3-session-store")(session)
+const db = new sqlite("sessions.db");
+
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configure session middleware
 app.use(session({
+    store: new SqliteStore({
+        client: db, 
+        expired: {
+          clear: true,
+          intervalMs: 900000 //ms = 15min
+        }
+      }),
     secret: 'your-secret-key', // Change to a secure secret in production
     resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false } 
+    saveUninitialized: false
 }));
 
 function isAuthenticated(req, res, next) {
