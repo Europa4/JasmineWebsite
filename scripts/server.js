@@ -10,7 +10,7 @@ const port = 5500;
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const ejs = require('ejs');
-const html2rtf = require('html2rtf');
+const sqlite = require("better-sqlite3");
 
 app.set('views', path.join(__dirname, '..', 'views')); // Ensure the correct path to the views folder
 app.set('view engine', 'html'); // Use 'html' if you're serving raw HTML files
