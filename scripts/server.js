@@ -223,6 +223,10 @@ app.get('/contactUs', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'contactUs.html'));
 });
 
+app.get('/admin', isAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'admin.html'));
+});
+
 app.get('/stories/:slug', (req, res) => {
     const slug = req.params.slug;
     generatePageHTML('wishes', slug, req, res);
