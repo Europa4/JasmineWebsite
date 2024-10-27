@@ -1,7 +1,6 @@
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
 ------------------------------------------------------------------------------------
 Do a test deployment
-Move edit and delete buttons into a div of their own
 -----------------------------------------------------------------------------------
 Add admin page
 Add logout page to admin page

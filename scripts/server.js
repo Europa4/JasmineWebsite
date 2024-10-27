@@ -79,6 +79,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
+    console.log("logging out")
     req.session.destroy(err => {
         if (err) {
             return res.status(500).send('Failed to log out');
@@ -246,46 +247,32 @@ function generatePageHTML(file, slug, req, res) {
 
     const filePath = path.join(__dirname, '../Data/' + file + '.csv');
     
-    // Create a file stream and use readline to process the file line by line
     const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity // Recognizes all CR LF (Windows-style) line breaks
-    });
-
-    let found = false; // Flag to check if story is found
-    let currentLine = 0; // Line counter
+    const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+    let found = false;
+    let currentLine = 0;
 
     rl.on('line', (line) => {
         currentLine++;
-        if (currentLine === 1) return; // Skip the header line
+        if (currentLine === 1) return;
 
         const [title, content, image, placeholder, date, storyId] = line.split('|');
         if (id === parseInt(storyId)) {
             found = true;
-            rl.close(); // Close the readline interface since we found the row
-            
-            // Reverse the date from YYYY-MM-DD to DD-MM-YYYY
+            rl.close();
+
             const formattedDate = date.split('-').reverse().join('-');
 
-            // Conditionally include the "Delete" and "Edit" buttons if the user is logged in
-            const editButton = (req.session && req.session.user) ? `
-                <button class="btn btn-warning" id="edit-btn" style="position: absolute; top: 10px; right: 100px;">
-                    Edit
-                </button>
+            // Conditional edit and delete buttons if logged in
+            const userControls = (req.session && req.session.user) ? `
+                <div class="button-container d-flex gap-2">
+                    <button class="btn btn-warning" id="edit-btn">Edit</button>
+                    <button class="btn btn-danger" id="delete-btn">Delete</button>
+                </div>
                 <script>
                     document.getElementById('edit-btn').addEventListener('click', function() {
-                        window.location.href = '/editStory/${file}-${id}'; // Redirect to edit page
+                        window.location.href = '/editStory/${file}-${id}';
                     });
-                </script>
-            ` : '';
-
-            const deleteButton = (req.session && req.session.user) ? `
-                <button class="btn btn-danger" id="delete-btn" style="position: absolute; top: 10px; right: 10px;">
-                    Delete
-                </button>
-                <script>
                     document.getElementById('delete-btn').addEventListener('click', function() {
                         if (confirm('Are you sure you want to delete this story?')) {
                             window.location.href = '/deleteStory/${file}-${id}';
@@ -294,7 +281,6 @@ function generatePageHTML(file, slug, req, res) {
                 </script>
             ` : '';
 
-            // Generate the HTML response
             const htmlContent = `
                 <!DOCTYPE html>
                 <html lang="en">
@@ -307,10 +293,26 @@ function generatePageHTML(file, slug, req, res) {
                         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
                         <link rel="stylesheet" href="/css/main.css">
                         <script src="/JS/main.js"></script>
+                        <style>
+                            .button-container {
+                                position: absolute;
+                                top: 10px;
+                                right: 10px;
+                                display: flex;
+                                gap: 10px;
+                            }
+                            @media (max-width: 576px) {
+                                .button-container {
+                                    top: 5px;
+                                    right: 5px;
+                                    flex-direction: column;
+                                }
+                            }
+                        </style>
                     </head>
                     <body>
                         <div id="header-placeholder"></div>
-                        <div class="container">
+                        <div class="container position-relative mt-4">
                             <div class="element">
                                 <div id="main-content" class="text-center">
                                     <h1>${title} - ${formattedDate}</h1>
@@ -319,7 +321,7 @@ function generatePageHTML(file, slug, req, res) {
                                     </div>
                                     <p>${content}</p>
                                 </div>
-                                ${deleteButton}${editButton}
+                                ${userControls}
                             </div>
                         </div>
                         <br>
@@ -328,14 +330,13 @@ function generatePageHTML(file, slug, req, res) {
                 </html>
             `;
 
-            // Send the generated HTML to the client
             res.send(htmlContent);
         }
     });
 
     rl.on('close', () => {
         if (!found) {
-            res.redirect('/404'); // Redirect if the story is not found
+            res.redirect('/404');
         }
     });
 
@@ -344,6 +345,7 @@ function generatePageHTML(file, slug, req, res) {
         res.status(500).json({ success: false, message: 'Failed to read CSV file' });
     });
 }
+
 // Endpoint to handle form submissions with an image
 app.post('/addNewStory', upload.single('image'), (req, res) => {
     const Title = req.body.title;
