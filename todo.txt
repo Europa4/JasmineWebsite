@@ -1,9 +1,7 @@
 Populate Trustees, Jasmine's Story, and Contact Us pages along with the footer details
 ------------------------------------------------------------------------------------
-Do a test deployment
+Do a test deployment //spent several hours on, ignoring
 -----------------------------------------------------------------------------------
-Add admin page
-Add logout page to admin page
 Add mechanism to add new users
 Change the magic number for card char length to a preference that can be set
 Allow the admin to change the number of cards displayed by default
