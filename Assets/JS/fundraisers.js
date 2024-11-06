@@ -15,7 +15,7 @@ function loadFundraisers() {
     function createFundraiserDiv(title, description, imgSrc, imgAlt, id) {
         // Create the main container div
         const containerDiv = document.createElement('div');
-        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-info rounded';
+        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-success rounded';
     
         // Create the row div
         const rowDiv = document.createElement('div');
