@@ -517,8 +517,11 @@ app.post('/updateStory', upload.single('image'), (req, res) => {
 
         // Rewrite the entire file with updated lines
         fs.writeFileSync(filePath, updatedLines.join('\n'), 'utf8');
-        
-        res.redirect('/' + file + `/${id}_${title.replace(/\s+/g, '_')}`);
+        let storyType = file;
+        if (storyType === 'wishes') {
+            storyType = 'stories';
+        }
+        res.redirect('/' + storyType + `/${id}_${title.replace(/\s+/g, '_')}`);
         
     } catch (err) {
         console.error('Error processing file:', err);
