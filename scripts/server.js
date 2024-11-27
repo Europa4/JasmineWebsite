@@ -544,9 +544,9 @@ function getStoriesFromDatabase(table, maxNumber, res) {
         const stories = db.prepare(`
             SELECT title, content, image, placeholder, date, story_id AS id
             FROM ${table}
-            ORDER BY date DESC
+            ORDER BY date ASC
             LIMIT ?
-        `).all(maxNumber).reverse(); // Reverse the order to show the latest first
+        `).all(maxNumber).reverse();
 
         res.json({ success: true, data: stories });
     } catch (err) {

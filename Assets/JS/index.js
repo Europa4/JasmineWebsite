@@ -1,5 +1,3 @@
-let numberOfFrontPageStories = 5;
-
 document.addEventListener("DOMContentLoaded", function() {
         loadEvents();
 });
@@ -23,7 +21,7 @@ function loadEvents() {
     
         // Create the first column div
         const colDiv1 = document.createElement('div');
-        colDiv1.className = imgSrc ? 'col-md-6 px-0' : 'col-12 px-0'; // Full width if no image
+        colDiv1.className = (imgSrc && imgSrc.trim() !== '') ? 'col-md-6 px-0' : 'col-12 px-0'; // Full width if no image
     
         // Create the h1 element
         const h1 = document.createElement('h1');
