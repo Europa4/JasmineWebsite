@@ -19,6 +19,41 @@ app.engine('html', ejs.renderFile);  // Use EJS to render HTML files as template
 
 const SqliteStore = require("better-sqlite3-session-store")(session)
 const session_db = new sqlite("sessions.db");
+const db = new sqlite('./Data/data.db');
+
+// Create tables if they don't exist
+const createTables = () => {
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS events (
+            story_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT,
+            image TEXT,
+            placeholder TEXT,
+            date TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS fundraisers (
+            story_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT,
+            image TEXT,
+            placeholder TEXT,
+            date TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS wishes (
+            story_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT,
+            image TEXT,
+            placeholder TEXT,
+            date TEXT
+        );
+    `);
+};
+
+createTables();
 
 // Middleware to parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -241,237 +276,183 @@ app.get('/fundraisers/:slug', (req, res) => {
     generatePageHTML('fundraisers', slug, req, res);
 });
 
-function generatePageHTML(file, slug, req, res) {
-    let firstUnderscore = slug.indexOf('_');
-    let id = slug.substring(0, firstUnderscore);
-    let givenTitle = slug.substring(firstUnderscore + 1);
-    id = parseInt(id);
-    givenTitle = givenTitle.replace(/_/g, ' ');
+function generatePageHTML(table, slug, req, res) {
+    // Extract the ID and title from the slug
+    const firstUnderscore = slug.indexOf('_');
+    const id = parseInt(slug.substring(0, firstUnderscore), 10);
+    const givenTitle = slug.substring(firstUnderscore + 1).replace(/_/g, ' ');
 
-    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
-    
-    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-    const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
-    let found = false;
-    let currentLine = 0;
+    try {
+        // Query the database for the specific story
+        const row = db.prepare(`
+            SELECT title, content, image, placeholder, date, story_id
+            FROM ${table}
+            WHERE story_id = ?
+        `).get(id);
 
-    rl.on('line', (line) => {
-        currentLine++;
-        if (currentLine === 1) return;
+        if (!row) {
+            return res.redirect('/404'); // Redirect to 404 if not found
+        }
 
-        const [title, content, image, placeholder, date, storyId] = line.split('|');
-        if (id === parseInt(storyId)) {
-            found = true;
-            rl.close();
+        // Format the date for display
+        const formattedDate = row.date.split('-').reverse().join('-');
 
-            const formattedDate = date.split('-').reverse().join('-');
+        // Conditional edit and delete buttons if logged in
+        const userControls = (req.session && req.session.user) ? `
+            <div class="button-container d-flex gap-2">
+                <button class="btn btn-warning" id="edit-btn">Edit</button>
+                <button class="btn btn-danger" id="delete-btn">Delete</button>
+            </div>
+            <script>
+                document.getElementById('edit-btn').addEventListener('click', function() {
+                    window.location.href = '/editStory/${table}-${id}';
+                });
+                document.getElementById('delete-btn').addEventListener('click', function() {
+                    if (confirm('Are you sure you want to delete this story?')) {
+                        window.location.href = '/deleteStory/${table}-${id}';
+                    }
+                });
+            </script>
+        ` : '';
 
-            // Conditional edit and delete buttons if logged in
-            const userControls = (req.session && req.session.user) ? `
-                <div class="button-container d-flex gap-2">
-                    <button class="btn btn-warning" id="edit-btn">Edit</button>
-                    <button class="btn btn-danger" id="delete-btn">Delete</button>
-                </div>
-                <script>
-                    document.getElementById('edit-btn').addEventListener('click', function() {
-                        window.location.href = '/editStory/${file}-${id}';
-                    });
-                    document.getElementById('delete-btn').addEventListener('click', function() {
-                        if (confirm('Are you sure you want to delete this story?')) {
-                            window.location.href = '/deleteStory/${file}-${id}';
+        // Build the HTML content
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${row.title} | ${formattedDate}</title>
+                    <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
+                    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <link rel="stylesheet" href="/css/main.css">
+                    <script src="/JS/main.js"></script>
+                    <style>
+                        .button-container {
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            display: flex;
+                            gap: 10px;
                         }
-                    });
-                </script>
-            ` : '';
-
-            const htmlContent = `
-                <!DOCTYPE html>
-                <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>${title} | ${formattedDate}</title>
-                        <link rel="icon" href="/Images/favicon.png" type="image/x-icon">
-                        <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-                        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                        <link rel="stylesheet" href="/css/main.css">
-                        <script src="/JS/main.js"></script>
-                        <style>
+                        @media (max-width: 576px) {
                             .button-container {
-                                position: absolute;
-                                top: 10px;
-                                right: 10px;
-                                display: flex;
-                                gap: 10px;
+                                top: 5px;
+                                right: 5px;
+                                flex-direction: column;
                             }
-                            @media (max-width: 576px) {
-                                .button-container {
-                                    top: 5px;
-                                    right: 5px;
-                                    flex-direction: column;
-                                }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div id="header-placeholder"></div>
-                        <div class="container position-relative mt-4">
-                            <div class="element">
-                                <div id="main-content" class="text-center">
-                                    <h1>${title} - ${formattedDate}</h1>
-                                    <div class="d-flex justify-content-center">
-                                        <img src="${image}" alt="${placeholder}" class="img-fluid">
-                                    </div>
-                                    <p>${content}</p>
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div id="header-placeholder"></div>
+                    <div class="container position-relative mt-4">
+                        <div class="element">
+                            <div id="main-content" class="text-center">
+                                <h1>${row.title} - ${formattedDate}</h1>
+                                <div class="d-flex justify-content-center">
+                                    <img src="${row.image}" alt="${row.placeholder}" class="img-fluid">
                                 </div>
-                                ${userControls}
+                                <p>${row.content}</p>
                             </div>
+                            ${userControls}
                         </div>
-                        <br>
-                        <div id="footer-placeholder"></div>
-                    </body>
-                </html>
-            `;
+                    </div>
+                    <br>
+                    <div id="footer-placeholder"></div>
+                </body>
+            </html>
+        `;
 
-            res.send(htmlContent);
-        }
-    });
-
-    rl.on('close', () => {
-        if (!found) {
-            res.redirect('/404');
-        }
-    });
-
-    rl.on('error', (err) => {
-        console.error('Error reading the file:', err);
-        res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-    });
+        // Send the HTML content as the response
+        res.send(htmlContent);
+    } catch (err) {
+        console.error('Error fetching story from database:', err);
+        res.status(500).send('Internal Server Error');
+    }
 }
+
 
 // Endpoint to handle form submissions with an image
 app.post('/addNewStory', upload.single('image'), (req, res) => {
-    const Title = req.body.title;
-    const Content = req.body.content;
-    const Placeholder = req.body.placeholder ? req.body.placeholder : '';
-    const Date = req.body.date;
-    const Type = req.body.type;
-    let id = 0;
-    let newLine = '';
+    const title = req.body.title;
+    const content = req.body.content;
+    const placeholder = req.body.placeholder || ''; // Default to empty if not provided
+    const date = req.body.date;
+    const type = req.body.type; // Determines which table to insert into
 
     // If a file was uploaded, use its path
     const imagePath = req.file ? `/Images/${req.file.filename}` : '';
 
-    // File paths for site data and CSV
-    const siteDataFilePath = path.join(__dirname, '../Data/siteData.json');
-    const csvFilePath = path.join(__dirname, '../Data/', Type + '.csv');
+    // Determine the target table based on `type`
+    let targetTable = '';
+    if (type === 'events') {
+        targetTable = 'events';
+    } else if (type === 'fundraisers') {
+        targetTable = 'fundraisers';
+    } else if (type === 'wishes') {
+        targetTable = 'wishes';
+    } else {
+        return res.status(400).json({ success: false, message: 'Invalid type specified' });
+    }
 
-    // Stream-based approach for adding a new story
+    try {
+        // Insert the new story into the database
+        const stmt = db.prepare(`
+            INSERT INTO ${targetTable} (title, content, image, placeholder, date)
+            VALUES (?, ?, ?, ?, ?)
+        `);
 
-    // Step 1: Read the siteData.json file to get the story ID
-    fs.readFile(siteDataFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading JSON file:', err);
-            return res.status(500).json({ success: false, message: 'Failed to read siteData.json' });
-        }
+        stmt.run(title, content, imagePath, placeholder, date);
 
-        // Parse the JSON data
-        let jsonData;
-        try {
-            jsonData = JSON.parse(data);
-        } catch (parseErr) {
-            console.error('Error parsing JSON file:', parseErr);
-            return res.status(500).json({ success: false, message: 'Failed to parse JSON' });
-        }
-
-        // Extract the current story ID
-        id = jsonData.StoryNumber;
-
-        // Create the new line for the CSV file (including the image path)
-        newLine = `\n${Title}|${Content}|${imagePath}|${Placeholder}|${Date}|${id}`;
-
-        // Increment the story number and update siteData.json
-        id += 1;
-        jsonData.StoryNumber = id;
-
-        // Step 2: Update the siteData.json file with the new story number
-        fs.writeFile(siteDataFilePath, JSON.stringify(jsonData, null, 4), (writeErr) => {
-            if (writeErr) {
-                console.error('Error writing updated JSON file:', writeErr);
-                return res.status(500).json({ success: false, message: 'Failed to update siteData.json' });
-            }
-
-            // Step 3: Append the new story to the appropriate CSV file using streaming
-            const csvStream = fs.createWriteStream(csvFilePath, { flags: 'a' }); // 'a' flag to append data
-            csvStream.write(newLine, (err) => {
-                if (err) {
-                    console.error('Error writing to CSV file:', err);
-                    return res.status(500).json({ success: false, message: 'Failed to write to CSV file' });
-                }
-
-                // Close the stream and respond to the client
-                csvStream.end();
-                res.json({ success: true, message: 'Successfully added to CSV' });
-            });
-        });
-    });
+        // Respond to the client with success
+        res.json({ success: true, message: 'Story successfully added to the database' });
+    } catch (err) {
+        console.error('Error inserting story into database:', err);
+        res.status(500).json({ success: false, message: 'Failed to add story to the database' });
+    }
 });
 
 app.get('/editStory/:slug', isAuthenticated, (req, res) => {
     const slug = req.params.slug;
-    let firstDash = slug.indexOf('-');
-    let file = slug.substring(0, firstDash);
-    generateEditPage(file, slug, req, res); // Adjust based on file type
-});
 
-function generateEditPage(file, slug, req, res) {
-    let firstUnderscore = slug.indexOf('-');
-    //let id = slug.substring(0, firstUnderscore);
-    let id = slug.substring(firstUnderscore + 1);
-    id = parseInt(id);
-    //givenTitle = givenTitle.replace(/_/g, ' ');
+    // Extract file type (table) and story ID from the slug
+    const firstDash = slug.indexOf('-');
+    const table = slug.substring(0, firstDash); // e.g., 'events', 'fundraisers', 'wishes'
+    const storyId = parseInt(slug.substring(firstDash + 1), 10);
 
-    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
+    // Validate table type
+    const validTables = ['events', 'fundraisers', 'wishes'];
+    if (!validTables.includes(table)) {
+        return res.status(400).send('Invalid story type');
+    }
 
-    const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    });
+    // Fetch the story from the database
+    try {
+        const story = db.prepare(`SELECT * FROM ${table} WHERE story_id = ?`).get(storyId);
 
-    let found = false; // Add a flag to prevent multiple responses
-
-    rl.on('line', (line) => {
-        const [title, content, image, placeholder, date, storyId] = line.split('|');
-        if (id === parseInt(storyId) && !found) {
-            found = true; // Set the flag to true to avoid multiple responses
-            rl.close(); // Close the readline interface since we found the row
-            const outputContent = sanitizeHtmlForQuill(content);
-            //console.log(RTFcontent)
-            // Render the edit page with pre-filled data
-            res.render('editStory', {
-                id : id,
-                title : title,
-                content : outputContent,
-                image : image,
-                placeholder : placeholder,
-                date : date,
-            });
+        if (!story) {
+            return res.redirect('/404'); // Redirect if story not found
         }
-    });
 
-    rl.on('close', () => {
-        if (!found) {
-            // Send 404 only if the story was not found
-            res.redirect('/404');
-        }
-    });
+        // Sanitize content for rendering in the editor
+        const sanitizedContent = sanitizeHtmlForQuill(story.content);
 
-    rl.on('error', (err) => {
-        console.error('Error reading CSV file:', err);
+        // Render the edit page with pre-filled data
+        res.render('editStory', {
+            id: story.story_id,
+            title: story.title,
+            content: sanitizedContent,
+            image: story.image,
+            placeholder: story.placeholder,
+            date: story.date,
+        });
+    } catch (err) {
+        console.error('Error fetching story from database:', err);
         res.status(500).send('Internal Server Error');
-    });
-}
+    }
+});
 
 function sanitizeHtmlForQuill(html) {
     // Strip tags Quill doesn’t interpret correctly, preserving only formatting tags.
@@ -483,49 +464,48 @@ function sanitizeHtmlForQuill(html) {
         });
 }
 app.post('/updateStory', upload.single('image'), (req, res) => {
-    //console.log("content", req.body);
-    var { id, title, content, placeholder, date } = req.body;
-    var imagePath = '';
-    const url = req.body.currentUrl;
-    var file = url.match(/editStory\/([^ -]+)/);
-    file = file ? file[1] : null;
-    const filePath = path.join(__dirname, '../Data/' + file + '.csv');
+    const { id, title, content, placeholder, date, changedImage, currentUrl } = req.body;
+    let imagePath = '';
+
+    // Extract the table type from the URL
+    const match = currentUrl.match(/editStory\/([^ -]+)/);
+    const table = match ? match[1] : null;
+
+    const validTables = ['events', 'fundraisers', 'wishes'];
+    if (!validTables.includes(table)) {
+        return res.status(400).json({ success: false, message: 'Invalid story type' });
+    }
 
     try {
-        // Read the original file content
-        const data = fs.readFileSync(filePath, 'utf8');
-        
-        // Split the file into lines and modify the target line
-        const updatedLines = data.split('\n').map(line => {
-            const [oldTitle, oldContent, oldImage, oldPlaceholder, oldDate, storyId] = line.split('|');
-            if (parseInt(storyId) === parseInt(id)) {
-                // Return the updated line if ID matches
-                if(!req.file){
-                    if(req.body.changedImage === 'true'){
-                        imagePath = '';
-                        placeholder = '';
-                    } else {
-                        imagePath = oldImage;
-                    }
-                } else {
-                    imagePath = req.file ? `/Images/${req.file.filename}` : '';
-                }
-                return `${title}|${content}|${imagePath}|${placeholder}|${date}|${storyId}`;
+        // Determine the new image path
+        if (!req.file) {
+            if (changedImage === 'true') {
+                // Image was removed
+                imagePath = '';
+            } else {
+                // Keep the existing image path from the database
+                const existingStory = db.prepare(`SELECT image FROM ${table} WHERE story_id = ?`).get(id);
+                imagePath = existingStory ? existingStory.image : '';
             }
-            return line; // Return the original line if no match
-        });
-
-        // Rewrite the entire file with updated lines
-        fs.writeFileSync(filePath, updatedLines.join('\n'), 'utf8');
-        let storyType = file;
-        if (storyType === 'wishes') {
-            storyType = 'stories';
+        } else {
+            // Use the uploaded file's path
+            imagePath = `/Images/${req.file.filename}`;
         }
-        res.redirect('/' + storyType + `/${id}_${title.replace(/\s+/g, '_')}`);
-        
+
+        // Update the story in the database
+        const stmt = db.prepare(`
+            UPDATE ${table}
+            SET title = ?, content = ?, image = ?, placeholder = ?, date = ?
+            WHERE story_id = ?
+        `);
+        stmt.run(title, content, imagePath, placeholder, date, id);
+
+        // Redirect to the updated story's page
+        const storyType = table === 'wishes' ? 'stories' : table; // Adjust "wishes" to "stories" for redirection
+        res.redirect(`/${storyType}/${id}_${title.replace(/\s+/g, '_')}`);
     } catch (err) {
-        console.error('Error processing file:', err);
-        res.status(500).json({ success: false, message: 'Error updating the file' });
+        console.error('Error updating story in database:', err);
+        res.status(500).json({ success: false, message: 'Error updating the story' });
     }
 });
 
@@ -534,235 +514,173 @@ app.get('/deleteStory/:id', (req, res) => {
         return res.status(403).send('Unauthorized');
     }
 
+    // Extract the table name and story ID from the parameter
     const passedData = req.params.id;
-    const [file, storyId] = passedData.split('-');
-    const filePath = path.join(__dirname, '..', 'Data', file + '.csv');
-    deleteRowById(filePath, storyId);
+    const [table, storyId] = passedData.split('-');
 
-    res.redirect('/');  // Redirect to homepage or another page after deletion
+    // Validate the table name
+    const validTables = ['events', 'fundraisers', 'wishes'];
+    if (!validTables.includes(table)) {
+        return res.status(400).json({ success: false, message: 'Invalid story type' });
+    }
+
+    try {
+        // Delete the row from the database
+        const stmt = db.prepare(`DELETE FROM ${table} WHERE story_id = ?`);
+        stmt.run(storyId);
+
+        // Redirect to the homepage or another appropriate page
+        res.redirect('/');
+    } catch (err) {
+        console.error('Error deleting story from database:', err);
+        res.status(500).json({ success: false, message: 'Failed to delete the story' });
+    }
 });
 
-function deleteRowById(filePath, idToDelete) {
-    const tempFilePath = path.join(__dirname, 'temp.csv');
-    
-    // Create a write stream for the temporary file
-    const writeStream = fs.createWriteStream(tempFilePath);
-    writeStream.write('Title|Content|Image|Placeholder|Date|ID'); // Write the header row
-    // Read the original CSV file as a stream and process it line by line
-    fs.createReadStream(filePath)
-        .pipe(csv({ separator: '|' }))  // Adjust the separator if needed
-        .on('data', (row) => {
-            const currentID = row.ID; // Assume 'ID' is the header of the ID column
-            if (currentID !== idToDelete.toString()) {
-                // Write the row to the temp file if it doesn't match the idToDelete
-                writeStream.write('\n' + Object.values(row).join('|'));
-            }
-        })
-        .on('end', () => {
-            // When reading is finished, close the write stream
-            writeStream.end();
-            // Replace the original CSV file with the temporary file
-            fs.rename(tempFilePath, filePath, (err) => {
-                if (err) throw err;
-            });
-        })
-        .on('error', (err) => {
-            console.error('Error reading or processing CSV file:', err);
-            writeStream.end(); // Ensure the write stream is closed on error
-        });
+
+function getStoriesFromDatabase(table, maxNumber, res) {
+    try {
+        // Query the database to get stories, sorted by date (descending)
+        const stories = db.prepare(`
+            SELECT title, content, image, placeholder, date, story_id AS id
+            FROM ${table}
+            ORDER BY date ASC
+            LIMIT ?
+        `).all(maxNumber).reverse();
+
+        res.json({ success: true, data: stories });
+    } catch (err) {
+        console.error(`Error fetching data from ${table}:`, err);
+        res.status(500).json({ success: false, message: 'Failed to fetch stories' });
+    }
 }
 
+function getStoryDisplayNumber()
+{
+    const defaultMaxNumber = 5;
 
-function readCsvAndSendResponse(csvFilePath, res) {
-    const stories = [];
-    const preferencesPath = './Data/preferences.json'
-    let storyMaxNumber = 5; // Default value
+    // Fetch preferences if available
+    const preferencesPath = './Data/preferences.json';
+    let storyMaxNumber = defaultMaxNumber;
 
-    // Step 1: Read preferences.json to get the max number of stories
-    fs.readFile(preferencesPath, 'utf8', (err, prefData) => {
-        if (!err) {
-            try {
-                const preferences = JSON.parse(prefData);
-                storyMaxNumber = preferences.numberOfPostsOnMainPage || storyMaxNumber;
-            } catch (err) {
-                console.error('Error parsing preferences file:', err);
-            }
-        } else {
-            console.error('Error reading preferences file:', err);
-        }
+    try {
+        const preferences = JSON.parse(fs.readFileSync(preferencesPath, 'utf8'));
+        storyMaxNumber = preferences.numberOfPostsOnMainPage || defaultMaxNumber;
+    } catch (err) {
+        console.error('Error reading or parsing preferences file:', err);
+    }
 
-        // Step 2: Stream the CSV file line by line
-        const csvStream = fs.createReadStream(csvFilePath, { encoding: 'utf8' });
-        const rl = readline.createInterface({
-            input: csvStream,
-            crlfDelay: Infinity, // Handle different line endings
-        });
-
-        let lineNumber = 0;
-
-        rl.on('line', (line) => {
-            lineNumber++;
-            if (lineNumber === 1) return; // Skip the header line
-
-            const [title, content, image, placeholder, date, id] = line.split('|');
-            stories.push({ title, content, image, placeholder, date, id });
-
-            // Stop reading if we hit the max story number
-            if (stories.length >= storyMaxNumber) {
-                rl.close();
-            }
-        });
-
-        rl.on('close', () => {
-            return res.json({ success: true, data: stories });
-        });
-
-        rl.on('error', (error) => {
-            console.error('Error reading CSV file:', error);
-            return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-        });
-    });
+    return storyMaxNumber;
 }
 
-// Refactored /api/getStories endpoint
 app.get('/api/getStories', (req, res) => {
-    const csvFilePath = './Data/wishes.csv'
-    readCsvAndSendResponse(csvFilePath, res);
+    let storyMaxNumber = getStoryDisplayNumber();
+
+    // Fetch stories from the wishes table
+    getStoriesFromDatabase('wishes', storyMaxNumber, res);
 });
 
-// Refactored /api/getEvents endpoint
+// Endpoint to fetch a limited number of events
 app.get('/api/getEvents', (req, res) => {
-    const csvFilePath = './Data/events.csv'
-    readCsvAndSendResponse(csvFilePath, res);
+    const storyMaxNumber = getStoryDisplayNumber();
+    getStoriesFromDatabase('events', storyMaxNumber, res);
 });
 
-// Refactored /api/getFundraisers endpoint
+// Endpoint to fetch a limited number of fundraisers
 app.get('/api/getFundraisers', (req, res) => {
-    const csvFilePath = './Data/fundraisers.csv'
-    readCsvAndSendResponse(csvFilePath, res);
+    const storyMaxNumber = getStoryDisplayNumber();
+    getStoriesFromDatabase('fundraisers', storyMaxNumber, res);
 });
 
-// Utility function to stream CSV, build the tree structure, and send the response
-function streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure) {
-    const results = [];
+function fetchAndBuildTree(table, res) {
+    try {
+        // Query the database for all rows in the table, sorted by date
+        const rows = db.prepare(`
+            SELECT title, content, image, placeholder, date, story_id AS id
+            FROM ${table}
+            ORDER BY date DESC
+        `).all();
 
-    // Step 1: Stream the CSV file line by line
-    const csvStream = fs.createReadStream(csvFilePath, { encoding: 'utf8' });
-    const rl = readline.createInterface({
-        input: csvStream,
-        crlfDelay: Infinity, // Handle different line endings
-    });
+        // Build the tree structure from the rows
+        const treeData = buildTreeStructure(rows);
 
-    let lineNumber = 0;
-
-    rl.on('line', (line) => {
-        lineNumber++;
-        if (lineNumber === 1) return; // Skip the header line
-
-        // Add each line to the results array (without the header)
-        results.push(line);
-    });
-
-    rl.on('close', () => {
-        // Step 2: After reading all the lines, build the tree structure
-        const treeData = buildTreeStructure(results);
-        return res.json(treeData);
-    });
-
-    rl.on('error', (error) => {
-        console.error('Error reading CSV file:', error);
-        return res.status(500).json({ success: false, message: 'Failed to read CSV file' });
-    });
+        // Send the response
+        res.json(treeData);
+    } catch (err) {
+        console.error(`Error fetching data from ${table}:`, err);
+        res.status(500).json({ success: false, message: 'Failed to fetch and process data' });
+    }
 }
 
-// Refactored /api/getDataForStoryArchiveTree endpoint
+// Endpoint to fetch story archive tree
 app.get('/api/getDataForStoryArchiveTree', (req, res) => {
-    const csvFilePath = './Data/wishes.csv'
-    streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure);
+    fetchAndBuildTree('wishes', res);
 });
 
-// Refactored /api/getDataForEventsArchiveTree endpoint
+// Endpoint to fetch events archive tree
 app.get('/api/getDataForEventsArchiveTree', (req, res) => {
-    const csvFilePath = './Data/events.csv'
-    streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure);
+    fetchAndBuildTree('events', res);
 });
 
-// Refactored /api/getDataForFundraiserArchiveTree endpoint
+// Endpoint to fetch fundraiser archive tree
 app.get('/api/getDataForFundraiserArchiveTree', (req, res) => {
-    const csvFilePath = './Data/fundraisers.csv'
-    streamCsvAndBuildTree(csvFilePath, res, buildTreeStructure);
+    fetchAndBuildTree('fundraisers', res);
 });
-
 function buildTreeStructure(data) {
     const tree = [];
 
     data.forEach((row) => {
-        const [title, content, image, placeholder, date, id] = row.split('|');
+        const { title, content, image, placeholder, date, id } = row;
         const [year, month, day] = date.split('-'); // Split YYYY-MM-DD format
-        
-        // Ensure ID values are correctly tracked
-        let yearID = -1, monthID = -1, dayID = -1;
 
         // Check if the year exists
-        let yearNode = tree.find(element => element.year === year);
+        let yearNode = tree.find((element) => element.year === year);
         if (!yearNode) {
-            yearNode = { year: year, months: [] };
+            yearNode = { year, months: [] };
             tree.push(yearNode);
         }
-        yearID = tree.indexOf(yearNode);
 
         // Check if the month exists
-        let monthNode = yearNode.months.find(element => element.month === month);
+        let monthNode = yearNode.months.find((element) => element.month === month);
         if (!monthNode) {
-            monthNode = { month: month, days: [] };
+            monthNode = { month, days: [] };
             yearNode.months.push(monthNode);
         }
-        monthID = yearNode.months.indexOf(monthNode);
 
         // Check if the day exists
-        let dayNode = monthNode.days.find(element => element.day === day);
+        let dayNode = monthNode.days.find((element) => element.day === day);
         if (!dayNode) {
-            dayNode = { day: day, events: [] };
+            dayNode = { day, events: [] };
             monthNode.days.push(dayNode);
         }
-        dayID = monthNode.days.indexOf(dayNode);
 
-        // Push the event into the correct day node
-        dayNode.events.push({ title: title, id: id });
+        // Add the event to the correct day node
+        dayNode.events.push({ title, id });
     });
 
-    // After populating the tree, we will sort the data
-
-    // Sort events by title within each day
-    tree.forEach(yearNode => {
-        yearNode.months.forEach(monthNode => {
-            monthNode.days.forEach(dayNode => {
+    // Sort data within the tree
+    tree.forEach((yearNode) => {
+        yearNode.months.forEach((monthNode) => {
+            monthNode.days.forEach((dayNode) => {
                 dayNode.events.sort((a, b) => a.title.localeCompare(b.title)); // Alphabetical order by title
             });
+
+            monthNode.days.sort((a, b) => parseInt(b.day) - parseInt(a.day)); // Numerical descending order
         });
+
+        yearNode.months.sort((a, b) => parseInt(b.month) - parseInt(a.month)); // Numerical descending order
     });
 
-    // Sort days in decending numerical order
-    tree.forEach(yearNode => {
-        yearNode.months.forEach(monthNode => {
-            monthNode.days.sort((a, b) => parseInt(b.day) - parseInt(a.day));
-        });
-    });
+    tree.sort((a, b) => parseInt(b.year) - parseInt(a.year)); // Numerical descending order
 
-    // Sort months in decending numerical order
-    tree.forEach(yearNode => {
-        yearNode.months.sort((a, b) => parseInt(b.month) - parseInt(a.month));
-    });
-
-    // Sort years in decending numerical order
-    tree.sort((a, b) => parseInt(b.year) - parseInt(a.year));
-
-    tree.forEach(yearNode => {
-        yearNode.months.forEach(monthNode => {
+    // Convert month numbers to names
+    tree.forEach((yearNode) => {
+        yearNode.months.forEach((monthNode) => {
             const monthName = new Date(`${yearNode.year}-${monthNode.month}-01`).toLocaleString('default', { month: 'long' });
             monthNode.month = monthName;
-        })
+        });
     });
+
     return tree;
 }
 
