@@ -214,6 +214,10 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'JasminesStory.html'));
+});
+
+app.get('/wishes', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'index.html'));
 });
 
@@ -530,7 +534,7 @@ app.get('/deleteStory/:id', (req, res) => {
         stmt.run(storyId);
 
         // Redirect to the homepage or another appropriate page
-        res.redirect('/');
+        res.redirect('/' + table);
     } catch (err) {
         console.error('Error deleting story from database:', err);
         res.status(500).json({ success: false, message: 'Failed to delete the story' });
