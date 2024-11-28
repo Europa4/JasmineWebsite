@@ -261,6 +261,10 @@ app.get('/contactUs', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'contactUs.html'));
 });
 
+app.get('/donate', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'views', 'donate.html'));
+});
+
 app.get('/admin', isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'views', 'admin.html'));
 });
