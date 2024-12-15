@@ -554,7 +554,7 @@ function getStoriesFromDatabase(table, maxNumber, res) {
             FROM ${table}
             ORDER BY date ASC
             LIMIT ?
-        `).all(maxNumber).reverse();
+        `).all(maxNumber);
 
         res.json({ success: true, data: stories });
     } catch (err) {
