@@ -548,14 +548,13 @@ app.get('/deleteStory/:id', (req, res) => {
 
 function getStoriesFromDatabase(table, maxNumber, res) {
     try {
-        // Query the database to get stories, sorted by date (descending)
+        // Query the database to get stories, sorted by date
         const stories = db.prepare(`
             SELECT title, content, image, placeholder, date, story_id AS id
             FROM ${table}
-            ORDER BY date ASC
+            ORDER BY date DESC
             LIMIT ?
-        `).all(maxNumber).reverse();
-
+        `).all(maxNumber).reverse(); // Reverse the order to show the latest first
         res.json({ success: true, data: stories });
     } catch (err) {
         console.error(`Error fetching data from ${table}:`, err);
