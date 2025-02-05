@@ -5,3 +5,16 @@
     max-width: fit-content;
     margin-inline: auto;
   }
+
+  body {
+    background-color: #FFB3C5;
+}
+
+/* Override Bootstrap's bg-light for the navbar */
+.navbar.bg-light {
+  background-color: #FAAEC0 !important;
+}
+
+.card.bg-light{
+  background-color: #FAAEC0 !important;
+}
