@@ -29,7 +29,7 @@ function createCommitteeMemberCard(name, position, description, imgSrc) {
 
     // Create the main container div
     const containerDiv = document.createElement('div');
-    containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-secondary rounded';
+    containerDiv.className = 'p-4 p-md-4 mb-4 text-black bg-secondary rounded';
 
     // Create the row div
     const rowDiv = document.createElement('div');
