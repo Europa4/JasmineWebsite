@@ -7,9 +7,9 @@
   }
 
   body {
-    background-color: #FFB3C5;
+    background: url('./../Images/d. Blurred Valentines Day Wallpaper.jpg') no-repeat center center fixed;
+    background-size: cover;
 }
-
 /* Override Bootstrap's bg-light for the navbar */
 .navbar.bg-light {
   background-color: #FAAEC0 !important;
