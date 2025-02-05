@@ -18,3 +18,15 @@
 .card.bg-light{
   background-color: #FAAEC0 !important;
 }
+
+.bg-dark{
+  background-color: #e3d4fc !important;
+}
+
+.bg-secondary{
+  background-color: #fcd4fc !important;
+}
+
+.bg-fundraiser{
+  background-color: #fcd4e2 !important;
+}

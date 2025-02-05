@@ -13,7 +13,7 @@ function loadFundraisers() {
     function createFundraiserDiv(title, description, imgSrc, imgAlt, id) {
         // Create the main container div
         const containerDiv = document.createElement('div');
-        containerDiv.className = 'p-4 p-md-4 mb-4 text-white bg-success rounded';
+        containerDiv.className = 'p-4 p-md-4 mb-4 text-black bg-fundraiser rounded';
     
         // Create the row div
         const rowDiv = document.createElement('div');
@@ -51,7 +51,7 @@ function loadFundraisers() {
         // Create the anchor element
         const anchor = document.createElement('a');
         anchor.href = '/fundraisers/' + id + '_' + title.replace(/\s+/g, '_');
-        anchor.className = 'text-white fw-bold';
+        anchor.className = 'text-black fw-bold';
         anchor.textContent = 'Continue reading...';
     
         // Append the anchor to the second paragraph
