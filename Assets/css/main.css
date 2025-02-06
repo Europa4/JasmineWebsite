@@ -30,3 +30,9 @@
 .bg-fundraiser{
   background-color: #fcd4e2 !important;
 }
+
+.text-wrapper {
+  background-color: rgba(255, 255, 255, 0.7); /* light overlay with 70% opacity */
+  padding: 5px;
+  border-radius: 4px;
+}
