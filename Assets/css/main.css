@@ -32,7 +32,7 @@
 }
 
 .text-wrapper {
-  background-color: rgba(251, 229, 236, 0.6); /* light overlay with 70% opacity */
+  background-color: rgba(251, 229, 236, 0.6); /* light overlay with 60% opacity */
   padding: 5px;
   border-radius: 4px;
 }
