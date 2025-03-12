@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.reset(); // Reset the form after successful submission
                     quill.setContents([]);  // This clears the Quill editor
                 } else {
-                    console.error('Failed to add to CSV:', data.message);
+                    console.error('Failed to add to DB:', data.message);
                 }
             })
             .catch(error => {
