@@ -289,6 +289,16 @@ function generatePageHTML(table, slug, req, res) {
     const firstUnderscore = slug.indexOf('_');
     const id = parseInt(slug.substring(0, firstUnderscore), 10);
     const givenTitle = slug.substring(firstUnderscore + 1).replace(/_/g, ' ');
+    let divColour = 'bg-dark';
+    if (table === 'wishes') {
+        divColour = 'bg-dark';
+    }
+    else if (table === 'events') {
+        divColour = 'bg-secondary';
+    }
+    else if (table === 'fundraisers') {
+        divColour = 'bg-fundraiser';
+    }
 
     try {
         // Query the database for the specific story
@@ -358,11 +368,16 @@ function generatePageHTML(table, slug, req, res) {
                     <div class="container position-relative mt-4">
                         <div class="element">
                             <div id="main-content" class="text-center">
-                                <h1>${row.title} - ${formattedDate}</h1>
+                                <div class="p-4 p-md-4 mb-4 text-black ${divColour} rounded">
+                                    <h1>${row.title} - ${formattedDate}</h1>
+                                </div>
                                 <div class="d-flex justify-content-center">
                                     <img src="${row.image}" alt="${row.placeholder}" class="img-fluid">
                                 </div>
-                                <p>${row.content}</p>
+                                <br>
+                                <div class="p-4 p-md-4 mb-4 text-black ${divColour} rounded">
+                                    <p>${row.content}</p>
+                                </div>
                             </div>
                             ${userControls}
                         </div>

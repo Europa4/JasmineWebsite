@@ -13,22 +13,32 @@
 /* Override Bootstrap's bg-light for the navbar */
 .navbar.bg-light {
   background-color: #FAAEC0 !important;
+  padding: 5px;
+  border-radius: 4px;
 }
 
 .card.bg-light{
   background-color: #FAAEC0 !important;
+  padding: 5px;
+  border-radius: 4px;
 }
 
 .bg-dark{
   background-color: #e3d4fc !important;
+  padding: 5px;
+  border-radius: 4px;
 }
 
 .bg-secondary{
   background-color: #fcd4fc !important;
+  padding: 5px;
+  border-radius: 4px;
 }
 
 .bg-fundraiser{
   background-color: #fcd4e2 !important;
+  padding: 5px;
+  border-radius: 4px;
 }
 
 .text-wrapper {
