@@ -52,9 +52,6 @@ function createCommitteeMemberCard(name, position, description, imgSrc) {
     // Create the first paragraph for description
     const p1 = document.createElement('p');
     p1.className = 'lead my-3';
-    if (description.length > 503) {
-        description = description.substring(0, 500) + '...';
-    }
     p1.textContent = description;
 
     // Append name, position, and description to the first column div
