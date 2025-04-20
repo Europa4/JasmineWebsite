@@ -14,31 +14,31 @@
     {
         "name" : "Gail Ann Hill",
         "position" : "Trustee",
-        "desription" : "Gail is a trustee of the committee and has been a member of the committee for 2 years. She is a retired teacher and has a passion for the arts.",
-        "image" : ""
+        "desription" : "Gail is Jasmine’s auntie and they enjoyed a very close bond. Gail has always been an active supporter of the charity and its activities and she has supported many of its fundraising events. When Jasmine’s dad, Andrew, suggested about doing a tandem skydive, Gail eagerly said that she would do that with him. This became reality in 2023. Gail thoroughly enjoyed the day and, with her husband Jim, they raised a substantial amount of money for the charity. With all the support that Gail gave to the charity, it was only right that Gail should become a trustee and the charity was delighted when Gail accepted.",
+        "image" : "./Images/Gail Hill.jpg"
     },
     {
         "name" : "Francesca Brierley",
         "position" : "Trustee",
-        "desription" : "Francesca is a trustee of the committee and has been a member of the committee for 1 year. She is a retired teacher and has a passion for the arts.",
-        "image" : ""
+        "desription" : "Francesca became known to the charity, as her son Dan, who was being treated for cancer, made an application to the charity, which the trustees were delighted to approve. Sadly, Dan lost his fight for life. Since Dan’s passing, Debbie and Francesca continued to keep in close contact and, following the charity’s growth and development, Debbie made the proposal for Francesca to become a trustee. The charity was delighted that Francesca accepted.",
+        "image" : "./Images/Francesca Brierley.jpg"
     },
     {
         "name" : "Rowann Raynor",
         "position" : "Trustee",
-        "desription" : "Rowann is a trustee of the committee ",
+        "desription" : "Rowann was a close friend of Jasmine, with both sharing a deep love of horses. Both would attend the same horse show competitions and would be seen together, relaxing between showing classes and enjoying each other’s company during the day. With the charity expanding its services and needing more trustees, it was a natural step to ask Rowann to become a charity trustee.",
         "image" : "./Images/Rowann.png"
     },
     {
         "name" : "Garry Picken",
         "position" : "Trustee",
-        "desription" : "Garry is a trustee of the committee ",
-        "image" : ""
+        "desription" : "Garry was a close friend of Jasmine and they both worked for the same business, The Horse &amp; Carriage Company, where Garry was a Coachman and Jasmine was a groom. They worked a lot together and they would travel all over the country, supporting a wide range of events where a horse drawn carriage was required and became good friends. Garry is a founding member trustee of the charity.",
+        "image" : "./Images/Garry Picken.jpg"
     },
     {
         "name" : "Lisa Purnell",
         "position" : "Trustee",
-        "desription" : "Lisa is a trustee of the committee ",
-        "image" : ""
+        "desription" : "Lisa and Debbie have been best friends from a very early age and, as such, she has been in Jasmine’s life throughout. Lisa always took a close interest in Jasmine and particularly Jasmine’s interest in horses. Debbie felt it was a natural step to invite Lisa to become a trustee of the charity where Lisa is a founding member trustee.",
+        "image" : "./Images/Lisa Purnell.jpg"
     }
 ]
