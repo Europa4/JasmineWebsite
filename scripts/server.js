@@ -68,7 +68,7 @@ app.use(session({
         }
       }),
     //secret: 'your-secret-key', // Change to a secure secret in production
-    secret: sessionSecret,
+    secret: process.env.sessionSecret,
     resave: false,
     saveUninitialized: false
 }));
