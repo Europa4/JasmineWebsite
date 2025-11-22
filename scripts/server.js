@@ -67,7 +67,8 @@ app.use(session({
           intervalMs: 900000 //ms = 15min
         }
       }),
-    secret: 'your-secret-key', // Change to a secure secret in production
+    //secret: 'your-secret-key', // Change to a secure secret in production
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false
 }));
